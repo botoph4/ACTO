@@ -1,0 +1,236 @@
+{
+  "id": "scenario_mwot2aj3_rxbu",
+  "name": "中转台双臂同时动作",
+  "description": "空白工作表",
+  "lanes": [
+    {
+      "id": "right_arm",
+      "name": "右臂 / 搓线",
+      "short_name": "R",
+      "color": "#2F6BFF",
+      "description": "搓线、取线、捋线与复位"
+    },
+    {
+      "id": "transfer",
+      "name": "中转平台",
+      "short_name": "T",
+      "color": "#8B5CF6",
+      "description": "夹紧、旋转、二次定位"
+    },
+    {
+      "id": "left_arm",
+      "name": "左臂 / 插线",
+      "short_name": "L",
+      "color": "#16A085",
+      "description": "拔帽、取料、调姿与力控插入"
+    },
+    {
+      "id": "vision",
+      "name": "视觉系统",
+      "short_name": "V",
+      "color": "#F59E0B",
+      "description": "手眼相机与末端内窥镜识别"
+    },
+    {
+      "id": "torso",
+      "name": "躯干 / 升降",
+      "short_name": "B",
+      "color": "#D96C3B",
+      "description": "机柜层高定位和姿态保持"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task_mwq6qov5_x2wn",
+      "name": "运动至取线位",
+      "lane": "right_arm",
+      "duration": 1,
+      "color": "#2F6BFF",
+      "category": "机械臂运动",
+      "dependencies": [],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwq6rfzn_n6y8",
+      "name": "识别线束",
+      "lane": "vision",
+      "duration": 2,
+      "color": "#F5A623",
+      "category": "视觉",
+      "dependencies": [
+        "task_mwq6qov5_x2wn"
+      ],
+      "stop_after": [
+        "task_mwq6qov5_x2wn"
+      ],
+      "can_parallel": false,
+      "locked_resources": [
+        "right_arm",
+        "left_arm"
+      ],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwq6t0gu_ykfo",
+      "name": "搓线末端动作搓出单根线",
+      "lane": "right_arm",
+      "duration": 10,
+      "color": "#2F6BFF",
+      "category": "末端动作",
+      "dependencies": [
+        "task_mwq6rfzn_n6y8"
+      ],
+      "stop_after": [
+        "task_mwq6rfzn_n6y8"
+      ],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwq6uib7_l83q",
+      "name": "运动至中转平台捋线",
+      "lane": "right_arm",
+      "duration": 6,
+      "color": "#2F6BFF",
+      "category": "机械臂运动",
+      "dependencies": [
+        "task_mwq6t0gu_ykfo"
+      ],
+      "stop_after": [
+        "task_mwq6t0gu_ykfo"
+      ],
+      "can_parallel": true,
+      "locked_resources": [
+        "transfer"
+      ],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwq6vzdk_ri3f",
+      "name": "光纤拔帽&二次定位",
+      "lane": "transfer",
+      "duration": 6,
+      "color": "#8B5CF6",
+      "category": "中转平台",
+      "dependencies": [
+        "task_mwq6t0gu_ykfo"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwq6zc9v_dy25",
+      "name": "条形码扫码",
+      "lane": "vision",
+      "duration": 2,
+      "color": "#F5A623",
+      "category": "视觉",
+      "dependencies": [
+        "task_mwq6vzdk_ri3f"
+      ],
+      "stop_after": [
+        "task_mwq6vzdk_ri3f"
+      ],
+      "can_parallel": true,
+      "locked_resources": [
+        "left_arm",
+        "right_arm"
+      ],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwq72brk_h6fe",
+      "name": "交换机光模块拔防尘塞新动作",
+      "lane": "left_arm",
+      "duration": 6,
+      "color": "#0EA5C6",
+      "category": "机械臂运动",
+      "dependencies": [
+        "task_mwq6zc9v_dy25"
+      ],
+      "stop_after": [
+        "task_mwq6zc9v_dy25"
+      ],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwq74k78_7366",
+      "name": "强化学习对位",
+      "lane": "vision",
+      "duration": 3,
+      "color": "#F5A623",
+      "category": "视觉",
+      "dependencies": [
+        "task_mwq75xc7_cxvw"
+      ],
+      "stop_after": [
+        "task_mwq75xc7_cxvw"
+      ],
+      "can_parallel": true,
+      "locked_resources": [
+        "left_arm",
+        "right_arm"
+      ],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwq75qkp_n7p9",
+      "name": "力控插接",
+      "lane": "left_arm",
+      "duration": 1,
+      "color": "#0EA5C6",
+      "category": "自定义",
+      "dependencies": [
+        "task_mwq74k78_7366"
+      ],
+      "stop_after": [
+        "task_mwq74k78_7366"
+      ],
+      "can_parallel": true,
+      "locked_resources": [
+        "right_arm"
+      ],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwq75xc7_cxvw",
+      "name": "中转台取线至预插接位",
+      "lane": "left_arm",
+      "duration": 14,
+      "color": "#0EA5C6",
+      "category": "机械臂运动",
+      "dependencies": [
+        "task_mwq72brk_h6fe"
+      ],
+      "stop_after": [
+        "task_mwq72brk_h6fe"
+      ],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null
+    }
+  ],
+  "repeat_count": 3,
+  "loop": {
+    "start_task_id": "task_mwq6qov5_x2wn",
+    "release_after_task_id": "task_mwq6uib7_l83q"
+  }
+}

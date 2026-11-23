@@ -1,0 +1,246 @@
+{
+  "id": "m1-dual-arm-chest-transfer-repeat3-v1",
+  "name": "M1 双臂 + 胸口中转台作业流程（连续3次）",
+  "description": "同一套动作模板重复3次，不复制动作。批次总时间和折算CT由界面按重复次数计算。",
+  "lanes": [
+    {
+      "id": "right_arm",
+      "name": "右臂 / 搓线",
+      "short_name": "R",
+      "color": "#3978F6",
+      "description": "右臂移动、抓取、搓线、放置和捋线"
+    },
+    {
+      "id": "transfer",
+      "name": "胸口中转台",
+      "short_name": "T",
+      "color": "#8B5CF6",
+      "description": "拔线缆尾部防尘塞和位置二次矫正"
+    },
+    {
+      "id": "left_arm",
+      "name": "左臂 / 插线",
+      "short_name": "L",
+      "color": "#18A586",
+      "description": "拔光模块帽、取线移动、视觉对齐和力控插接"
+    },
+    {
+      "id": "vision",
+      "name": "视觉系统",
+      "short_name": "V",
+      "color": "#F5A623",
+      "description": "线缆预抓取视觉识别"
+    },
+    {
+      "id": "scanner",
+      "name": "二维码扫码器",
+      "short_name": "S",
+      "color": "#0EA5C6",
+      "description": "识别线缆二维码并获得目标光模块插槽"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "right_move_pre_grasp",
+      "name": "右臂移动至预抓取位",
+      "lane": "right_arm",
+      "duration": 1,
+      "color": "#3978F6",
+      "category": "右臂取线",
+      "dependencies": [],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "需求给定 1s。",
+      "manual_start": null
+    },
+    {
+      "id": "vision_identify_cable",
+      "name": "视觉识别拍照",
+      "lane": "vision",
+      "duration": 2,
+      "color": "#F5A623",
+      "category": "视觉识别",
+      "dependencies": [
+        "right_move_pre_grasp"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "需求给定 2s。视觉完成后右臂才能抓取。",
+      "manual_start": null
+    },
+    {
+      "id": "right_grasp_cables",
+      "name": "抓取多根线缆",
+      "lane": "right_arm",
+      "duration": 0.5,
+      "color": "#3978F6",
+      "category": "右臂取线",
+      "dependencies": [
+        "vision_identify_cable"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "需求未给出抓取耗时，暂估 0.5s；可在工作表中直接修改。",
+      "manual_start": null
+    },
+    {
+      "id": "right_stroke_one_cable",
+      "name": "搓线末端搓出 1 根线",
+      "lane": "right_arm",
+      "duration": 10,
+      "color": "#3978F6",
+      "category": "右臂取线",
+      "dependencies": [
+        "right_grasp_cables"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "需求给定 10s。",
+      "manual_start": null
+    },
+    {
+      "id": "right_place_on_transfer",
+      "name": "将线缆放置在胸口中转台",
+      "lane": "right_arm",
+      "duration": 3,
+      "color": "#3978F6",
+      "category": "右臂放线",
+      "dependencies": [
+        "right_stroke_one_cable"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "需求给定 3s。中转台所有动作必须在此动作完成后开始。",
+      "manual_start": null
+    },
+    {
+      "id": "right_lift_and_route",
+      "name": "右臂向上抬起捋线",
+      "lane": "right_arm",
+      "duration": 3,
+      "color": "#3978F6",
+      "category": "右臂捋线",
+      "dependencies": [
+        "right_place_on_transfer"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "需求给定 3s，可与中转台动作并行。",
+      "manual_start": null
+    },
+    {
+      "id": "transfer_remove_cap",
+      "name": "拔线缆尾部防尘塞",
+      "lane": "transfer",
+      "duration": 3,
+      "color": "#8B5CF6",
+      "category": "胸口中转台",
+      "dependencies": [
+        "right_place_on_transfer"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "需求给定 3s，可与右臂捋线并行。",
+      "manual_start": null
+    },
+    {
+      "id": "transfer_realign",
+      "name": "线缆位置二次矫正",
+      "lane": "transfer",
+      "duration": 3,
+      "color": "#8B5CF6",
+      "category": "胸口中转台",
+      "dependencies": [
+        "transfer_remove_cap"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "需求给定 3s。",
+      "manual_start": null
+    },
+    {
+      "id": "scanner_read_qr",
+      "name": "扫码识别线缆二维码",
+      "lane": "scanner",
+      "duration": 2,
+      "color": "#0EA5C6",
+      "category": "扫码识别",
+      "dependencies": [
+        "transfer_realign"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "需求给定 2s。扫码结果决定左臂目标插槽。",
+      "manual_start": null
+    },
+    {
+      "id": "left_move_remove_module_cap",
+      "name": "左臂移动至目标插槽并拔光模块帽",
+      "lane": "left_arm",
+      "duration": 6,
+      "color": "#18A586",
+      "category": "左臂拔帽",
+      "dependencies": [
+        "scanner_read_qr"
+      ],
+      "stop_after": [
+        "right_lift_and_route"
+      ],
+      "can_parallel": true,
+      "locked_resources": [
+        "right_arm"
+      ],
+      "notes": "需求给定 6s。该动作执行期间占用右臂资源，右臂不得移动。",
+      "manual_start": null
+    },
+    {
+      "id": "left_take_cable_and_move_insert",
+      "name": "从中转台取线并移动至预插接位",
+      "lane": "left_arm",
+      "duration": 14,
+      "color": "#18A586",
+      "category": "左臂取线",
+      "dependencies": [
+        "left_move_remove_module_cap",
+        "transfer_remove_cap",
+        "transfer_realign",
+        "scanner_read_qr"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "需求给定 14s。依赖已确保全部中转台动作完成且二维码已识别；此动作期间右臂可以移动。",
+      "manual_start": null
+    },
+    {
+      "id": "left_align_and_force_insert",
+      "name": "视觉强化学习对齐并力控插接",
+      "lane": "left_arm",
+      "duration": 6,
+      "color": "#18A586",
+      "category": "左臂插接",
+      "dependencies": [
+        "left_take_cable_and_move_insert"
+      ],
+      "stop_after": [
+        "right_lift_and_route"
+      ],
+      "can_parallel": true,
+      "locked_resources": [
+        "right_arm"
+      ],
+      "notes": "需求给定 6s。对齐和力控插接期间占用右臂资源，右臂不得移动。",
+      "manual_start": null
+    }
+  ],
+  "repeat_count": 3
+}

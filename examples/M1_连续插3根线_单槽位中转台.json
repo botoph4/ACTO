@@ -1,0 +1,655 @@
+{
+  "id": "m1-three-wire-continuous-v1",
+  "name": "M1 连续插3根线（单槽位中转台）",
+  "description": "连续三根线的流水排程。假设中转台一次只缓存一根线，右臂可在左臂14s取线移动期间处理下一根，左臂拔帽和插接期间右臂被锁定。抓取多根线缆暂估0.5s。",
+  "lanes": [
+    {
+      "id": "right_arm",
+      "name": "右臂 / 搓线",
+      "short_name": "R",
+      "color": "#3978F6",
+      "description": "右臂移动、抓取、搓线、放线和捋线"
+    },
+    {
+      "id": "transfer",
+      "name": "胸口中转台",
+      "short_name": "T",
+      "color": "#8B5CF6",
+      "description": "单槽位中转，拔尾部防尘塞和二次矫正"
+    },
+    {
+      "id": "left_arm",
+      "name": "左臂 / 插线",
+      "short_name": "L",
+      "color": "#18A586",
+      "description": "拔帽、取线移动、对齐和力控插接"
+    },
+    {
+      "id": "vision",
+      "name": "视觉系统",
+      "short_name": "V",
+      "color": "#F5A623",
+      "description": "线缆视觉识别"
+    },
+    {
+      "id": "scanner",
+      "name": "二维码扫码器",
+      "short_name": "S",
+      "color": "#0EA5C6",
+      "description": "扫码确定目标插槽"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "r_move_w1",
+      "name": "第1根：右臂移动至预抓取位",
+      "lane": "right_arm",
+      "duration": 1,
+      "color": "#3978F6",
+      "category": "右臂取线",
+      "dependencies": [],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "1s；第2/3根可在上一根左臂拔帽完成、左侧取线移动期间开始。",
+      "manual_start": null
+    },
+    {
+      "id": "vision_w1",
+      "name": "第1根：视觉识别拍照",
+      "lane": "vision",
+      "duration": 2,
+      "color": "#F5A623",
+      "category": "视觉识别",
+      "dependencies": [
+        "r_move_w1"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "2s。",
+      "manual_start": null
+    },
+    {
+      "id": "r_grab_w1",
+      "name": "第1根：抓取多根线缆",
+      "lane": "right_arm",
+      "duration": 0.5,
+      "color": "#3978F6",
+      "category": "右臂取线",
+      "dependencies": [
+        "vision_w1"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "需求未给耗时，暂估0.5s。",
+      "manual_start": null
+    },
+    {
+      "id": "r_stroke_w1",
+      "name": "第1根：搓出1根线",
+      "lane": "right_arm",
+      "duration": 10,
+      "color": "#3978F6",
+      "category": "右臂取线",
+      "dependencies": [
+        "r_grab_w1"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "10s。",
+      "manual_start": null
+    },
+    {
+      "id": "r_place_w1",
+      "name": "第1根：放线至胸口中转台",
+      "lane": "right_arm",
+      "duration": 3,
+      "color": "#3978F6",
+      "category": "右臂放线",
+      "dependencies": [
+        "r_stroke_w1"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "3s；中转台为单槽位，下一根放线需等待上一根从中转台取走。",
+      "manual_start": null
+    },
+    {
+      "id": "r_lift_w1",
+      "name": "第1根：右臂抬起捋线",
+      "lane": "right_arm",
+      "duration": 3,
+      "color": "#3978F6",
+      "category": "右臂捋线",
+      "dependencies": [
+        "r_place_w1"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "3s，可与中转台动作并行。",
+      "manual_start": null
+    },
+    {
+      "id": "t_cap_w1",
+      "name": "第1根：拔线缆尾部防尘塞",
+      "lane": "transfer",
+      "duration": 3,
+      "color": "#8B5CF6",
+      "category": "胸口中转台",
+      "dependencies": [
+        "r_place_w1"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "3s。",
+      "manual_start": null
+    },
+    {
+      "id": "t_realign_w1",
+      "name": "第1根：线缆位置二次矫正",
+      "lane": "transfer",
+      "duration": 3,
+      "color": "#8B5CF6",
+      "category": "胸口中转台",
+      "dependencies": [
+        "t_cap_w1"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "3s。",
+      "manual_start": null
+    },
+    {
+      "id": "scan_w1",
+      "name": "第1根：扫码识别二维码",
+      "lane": "scanner",
+      "duration": 2,
+      "color": "#0EA5C6",
+      "category": "扫码识别",
+      "dependencies": [
+        "t_realign_w1"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "2s。",
+      "manual_start": null
+    },
+    {
+      "id": "l_cap_w1",
+      "name": "第1根：移动至目标插槽并拔光模块帽",
+      "lane": "left_arm",
+      "duration": 6,
+      "color": "#18A586",
+      "category": "左臂拔帽",
+      "dependencies": [
+        "scan_w1"
+      ],
+      "stop_after": [
+        "r_lift_w1"
+      ],
+      "can_parallel": true,
+      "locked_resources": [
+        "right_arm"
+      ],
+      "notes": "6s；执行期间锁定右臂。",
+      "manual_start": null
+    },
+    {
+      "id": "l_take_w1",
+      "name": "第1根：从中转台取线并移动至预插接位",
+      "lane": "left_arm",
+      "duration": 14,
+      "color": "#18A586",
+      "category": "左臂取线",
+      "dependencies": [
+        "l_cap_w1",
+        "t_cap_w1",
+        "t_realign_w1",
+        "scan_w1"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "14s；执行期间右臂可移动。",
+      "manual_start": null
+    },
+    {
+      "id": "l_insert_w1",
+      "name": "第1根：视觉对齐并力控插接",
+      "lane": "left_arm",
+      "duration": 6,
+      "color": "#18A586",
+      "category": "左臂插接",
+      "dependencies": [
+        "l_take_w1"
+      ],
+      "stop_after": [
+        "r_lift_w1"
+      ],
+      "can_parallel": true,
+      "locked_resources": [
+        "right_arm"
+      ],
+      "notes": "6s；执行期间锁定右臂。",
+      "manual_start": null
+    },
+    {
+      "id": "r_move_w2",
+      "name": "第2根：右臂移动至预抓取位",
+      "lane": "right_arm",
+      "duration": 1,
+      "color": "#3978F6",
+      "category": "右臂取线",
+      "dependencies": [
+        "l_cap_w1"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "1s；第2/3根可在上一根左臂拔帽完成、左侧取线移动期间开始。",
+      "manual_start": null
+    },
+    {
+      "id": "vision_w2",
+      "name": "第2根：视觉识别拍照",
+      "lane": "vision",
+      "duration": 2,
+      "color": "#F5A623",
+      "category": "视觉识别",
+      "dependencies": [
+        "r_move_w2"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "2s。",
+      "manual_start": null
+    },
+    {
+      "id": "r_grab_w2",
+      "name": "第2根：抓取多根线缆",
+      "lane": "right_arm",
+      "duration": 0.5,
+      "color": "#3978F6",
+      "category": "右臂取线",
+      "dependencies": [
+        "vision_w2"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "需求未给耗时，暂估0.5s。",
+      "manual_start": null
+    },
+    {
+      "id": "r_stroke_w2",
+      "name": "第2根：搓出1根线",
+      "lane": "right_arm",
+      "duration": 10,
+      "color": "#3978F6",
+      "category": "右臂取线",
+      "dependencies": [
+        "r_grab_w2"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "10s。",
+      "manual_start": null
+    },
+    {
+      "id": "r_place_w2",
+      "name": "第2根：放线至胸口中转台",
+      "lane": "right_arm",
+      "duration": 3,
+      "color": "#3978F6",
+      "category": "右臂放线",
+      "dependencies": [
+        "r_stroke_w2",
+        "l_take_w1"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "3s；中转台为单槽位，下一根放线需等待上一根从中转台取走。",
+      "manual_start": null
+    },
+    {
+      "id": "r_lift_w2",
+      "name": "第2根：右臂抬起捋线",
+      "lane": "right_arm",
+      "duration": 3,
+      "color": "#3978F6",
+      "category": "右臂捋线",
+      "dependencies": [
+        "r_place_w2"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "3s，可与中转台动作并行。",
+      "manual_start": null
+    },
+    {
+      "id": "t_cap_w2",
+      "name": "第2根：拔线缆尾部防尘塞",
+      "lane": "transfer",
+      "duration": 3,
+      "color": "#8B5CF6",
+      "category": "胸口中转台",
+      "dependencies": [
+        "r_place_w2"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "3s。",
+      "manual_start": null
+    },
+    {
+      "id": "t_realign_w2",
+      "name": "第2根：线缆位置二次矫正",
+      "lane": "transfer",
+      "duration": 3,
+      "color": "#8B5CF6",
+      "category": "胸口中转台",
+      "dependencies": [
+        "t_cap_w2"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "3s。",
+      "manual_start": null
+    },
+    {
+      "id": "scan_w2",
+      "name": "第2根：扫码识别二维码",
+      "lane": "scanner",
+      "duration": 2,
+      "color": "#0EA5C6",
+      "category": "扫码识别",
+      "dependencies": [
+        "t_realign_w2"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "2s。",
+      "manual_start": null
+    },
+    {
+      "id": "l_cap_w2",
+      "name": "第2根：移动至目标插槽并拔光模块帽",
+      "lane": "left_arm",
+      "duration": 6,
+      "color": "#18A586",
+      "category": "左臂拔帽",
+      "dependencies": [
+        "scan_w2",
+        "l_take_w1"
+      ],
+      "stop_after": [
+        "r_lift_w2"
+      ],
+      "can_parallel": true,
+      "locked_resources": [
+        "right_arm"
+      ],
+      "notes": "6s；执行期间锁定右臂。",
+      "manual_start": null
+    },
+    {
+      "id": "l_take_w2",
+      "name": "第2根：从中转台取线并移动至预插接位",
+      "lane": "left_arm",
+      "duration": 14,
+      "color": "#18A586",
+      "category": "左臂取线",
+      "dependencies": [
+        "l_cap_w2",
+        "t_cap_w2",
+        "t_realign_w2",
+        "scan_w2"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "14s；执行期间右臂可移动。",
+      "manual_start": null
+    },
+    {
+      "id": "l_insert_w2",
+      "name": "第2根：视觉对齐并力控插接",
+      "lane": "left_arm",
+      "duration": 6,
+      "color": "#18A586",
+      "category": "左臂插接",
+      "dependencies": [
+        "l_take_w2"
+      ],
+      "stop_after": [
+        "r_lift_w2"
+      ],
+      "can_parallel": true,
+      "locked_resources": [
+        "right_arm"
+      ],
+      "notes": "6s；执行期间锁定右臂。",
+      "manual_start": null
+    },
+    {
+      "id": "r_move_w3",
+      "name": "第3根：右臂移动至预抓取位",
+      "lane": "right_arm",
+      "duration": 1,
+      "color": "#3978F6",
+      "category": "右臂取线",
+      "dependencies": [
+        "l_cap_w2"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "1s；第2/3根可在上一根左臂拔帽完成、左侧取线移动期间开始。",
+      "manual_start": null
+    },
+    {
+      "id": "vision_w3",
+      "name": "第3根：视觉识别拍照",
+      "lane": "vision",
+      "duration": 2,
+      "color": "#F5A623",
+      "category": "视觉识别",
+      "dependencies": [
+        "r_move_w3"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "2s。",
+      "manual_start": null
+    },
+    {
+      "id": "r_grab_w3",
+      "name": "第3根：抓取多根线缆",
+      "lane": "right_arm",
+      "duration": 0.5,
+      "color": "#3978F6",
+      "category": "右臂取线",
+      "dependencies": [
+        "vision_w3"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "需求未给耗时，暂估0.5s。",
+      "manual_start": null
+    },
+    {
+      "id": "r_stroke_w3",
+      "name": "第3根：搓出1根线",
+      "lane": "right_arm",
+      "duration": 10,
+      "color": "#3978F6",
+      "category": "右臂取线",
+      "dependencies": [
+        "r_grab_w3"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "10s。",
+      "manual_start": null
+    },
+    {
+      "id": "r_place_w3",
+      "name": "第3根：放线至胸口中转台",
+      "lane": "right_arm",
+      "duration": 3,
+      "color": "#3978F6",
+      "category": "右臂放线",
+      "dependencies": [
+        "r_stroke_w3",
+        "l_take_w2"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "3s；中转台为单槽位，下一根放线需等待上一根从中转台取走。",
+      "manual_start": null
+    },
+    {
+      "id": "r_lift_w3",
+      "name": "第3根：右臂抬起捋线",
+      "lane": "right_arm",
+      "duration": 3,
+      "color": "#3978F6",
+      "category": "右臂捋线",
+      "dependencies": [
+        "r_place_w3"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "3s，可与中转台动作并行。",
+      "manual_start": null
+    },
+    {
+      "id": "t_cap_w3",
+      "name": "第3根：拔线缆尾部防尘塞",
+      "lane": "transfer",
+      "duration": 3,
+      "color": "#8B5CF6",
+      "category": "胸口中转台",
+      "dependencies": [
+        "r_place_w3"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "3s。",
+      "manual_start": null
+    },
+    {
+      "id": "t_realign_w3",
+      "name": "第3根：线缆位置二次矫正",
+      "lane": "transfer",
+      "duration": 3,
+      "color": "#8B5CF6",
+      "category": "胸口中转台",
+      "dependencies": [
+        "t_cap_w3"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "3s。",
+      "manual_start": null
+    },
+    {
+      "id": "scan_w3",
+      "name": "第3根：扫码识别二维码",
+      "lane": "scanner",
+      "duration": 2,
+      "color": "#0EA5C6",
+      "category": "扫码识别",
+      "dependencies": [
+        "t_realign_w3"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "2s。",
+      "manual_start": null
+    },
+    {
+      "id": "l_cap_w3",
+      "name": "第3根：移动至目标插槽并拔光模块帽",
+      "lane": "left_arm",
+      "duration": 6,
+      "color": "#18A586",
+      "category": "左臂拔帽",
+      "dependencies": [
+        "scan_w3",
+        "l_take_w2"
+      ],
+      "stop_after": [
+        "r_lift_w3"
+      ],
+      "can_parallel": true,
+      "locked_resources": [
+        "right_arm"
+      ],
+      "notes": "6s；执行期间锁定右臂。",
+      "manual_start": null
+    },
+    {
+      "id": "l_take_w3",
+      "name": "第3根：从中转台取线并移动至预插接位",
+      "lane": "left_arm",
+      "duration": 14,
+      "color": "#18A586",
+      "category": "左臂取线",
+      "dependencies": [
+        "l_cap_w3",
+        "t_cap_w3",
+        "t_realign_w3",
+        "scan_w3"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "14s；执行期间右臂可移动。",
+      "manual_start": null
+    },
+    {
+      "id": "l_insert_w3",
+      "name": "第3根：视觉对齐并力控插接",
+      "lane": "left_arm",
+      "duration": 6,
+      "color": "#18A586",
+      "category": "左臂插接",
+      "dependencies": [
+        "l_take_w3"
+      ],
+      "stop_after": [
+        "r_lift_w3"
+      ],
+      "can_parallel": true,
+      "locked_resources": [
+        "right_arm"
+      ],
+      "notes": "6s；执行期间锁定右臂。",
+      "manual_start": null
+    }
+  ]
+}

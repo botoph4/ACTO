@@ -1,0 +1,17 @@
+{
+  "name": "acto",
+  "private": true,
+  "version": "0.2.0",
+  "scripts": {
+    "install:all": "npm --prefix frontend install && python3 -m pip install -r backend/requirements.txt",
+    "dev": "concurrently -n API,WEB -c cyan,green \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "python3 -m uvicorn app.main:app --app-dir backend --reload --port 8000",
+    "dev:web": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "test": "PYTHONPATH=backend python3 -m pytest backend/tests -q",
+    "preview": "npm --prefix frontend run preview"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
