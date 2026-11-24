@@ -35,6 +35,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ApiError,
   fetchDemoScenario,
+  heartbeat,
   logout as logoutSession,
   requestSchedule,
   restoreSession,
@@ -202,6 +203,31 @@ export default function App() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!authUser) return;
+    const ping = () => {
+      if (document.visibilityState !== "visible") return;
+      void heartbeat().catch((error) => {
+        if (
+          error instanceof ApiError &&
+          (error.message.includes("登录") || error.message.includes("401"))
+        ) {
+          setAuthUser(null);
+        }
+      });
+    };
+    ping();
+    const timer = window.setInterval(ping, 30_000);
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") ping();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [authUser]);
 
   useEffect(() => {
     if (!toast) return;

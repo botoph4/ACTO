@@ -19,6 +19,7 @@ DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "acto.db"
 DB_PATH = Path(os.getenv("ACTO_DB_PATH", str(DEFAULT_DB_PATH)))
 SESSION_TTL_SECONDS = int(os.getenv("ACTO_SESSION_TTL_SECONDS", "604800"))
 PASSWORD_ITERATIONS = 310_000
+ONLINE_WINDOW_SECONDS = 120
 bearer = HTTPBearer(auto_error=False)
 
 
@@ -27,6 +28,11 @@ class AuthUser(BaseModel):
     username: str
     display_name: str
     role: str
+
+
+class ManagedUser(AuthUser):
+    last_seen_at: float | None = None
+    is_online: bool = False
 
 
 class LoginRequest(BaseModel):
@@ -148,12 +154,28 @@ def init_auth() -> None:
                 user_id INTEGER NOT NULL,
                 expires_at REAL NOT NULL,
                 created_at REAL NOT NULL,
+                last_seen_at REAL NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             );
             CREATE INDEX IF NOT EXISTS sessions_expires_at
             ON sessions(expires_at);
             """
         )
+        session_columns = {
+            str(row["name"])
+            for row in connection.execute("PRAGMA table_info(sessions)").fetchall()
+        }
+        if "last_seen_at" not in session_columns:
+            connection.execute(
+                "ALTER TABLE sessions ADD COLUMN last_seen_at REAL"
+            )
+            connection.execute(
+                """
+                UPDATE sessions
+                SET last_seen_at = created_at
+                WHERE last_seen_at IS NULL
+                """
+            )
         connection.execute(
             "DELETE FROM sessions WHERE expires_at <= ?",
             (time.time(),),
@@ -207,15 +229,17 @@ def login(username: str, password: str) -> tuple[AuthUser, str, float]:
         expires_at = time.time() + SESSION_TTL_SECONDS
         connection.execute(
             """
-            INSERT INTO sessions (token_hash, user_id, expires_at, created_at)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO sessions
+                (token_hash, user_id, expires_at, created_at, last_seen_at)
+            VALUES (?, ?, ?, ?, ?)
             """,
-            (_token_hash(token), row["id"], expires_at, time.time()),
+            (_token_hash(token), row["id"], expires_at, time.time(), time.time()),
         )
         return _user_from_row(row).as_user(), token, expires_at
 
 
 def authenticate(token: str) -> AuthContext:
+    now = time.time()
     with _connect() as connection:
         row = connection.execute(
             """
@@ -224,7 +248,7 @@ def authenticate(token: str) -> AuthContext:
             JOIN users u ON u.id = s.user_id
             WHERE s.token_hash = ? AND s.expires_at > ? AND u.disabled = 0
             """,
-            (_token_hash(token), time.time()),
+            (_token_hash(token), now),
         ).fetchone()
         if row is None:
             raise HTTPException(
@@ -232,6 +256,10 @@ def authenticate(token: str) -> AuthContext:
                 detail="登录已失效，请重新登录",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        connection.execute(
+            "UPDATE sessions SET last_seen_at = ? WHERE token_hash = ?",
+            (now, _token_hash(token)),
+        )
         return _user_from_row(row)
 
 
@@ -264,17 +292,48 @@ def require_admin(user: AuthContext = Depends(require_user)) -> AuthContext:
     return user
 
 
-def list_users() -> list[AuthUser]:
+def list_users() -> list[ManagedUser]:
+    now = time.time()
     with _connect() as connection:
         rows = connection.execute(
             """
-            SELECT id, username, display_name, role
-            FROM users
-            WHERE disabled = 0
-            ORDER BY created_at, id
-            """
+            SELECT
+                u.id,
+                u.username,
+                u.display_name,
+                u.role,
+                MAX(s.last_seen_at) AS last_seen_at
+            FROM users u
+            LEFT JOIN sessions s
+                ON s.user_id = u.id AND s.expires_at > ?
+            WHERE u.disabled = 0
+            GROUP BY u.id, u.username, u.display_name, u.role, u.created_at
+            """,
+            (now,),
         ).fetchall()
-        return [_user_from_row(row).as_user() for row in rows]
+        users = [
+            ManagedUser(
+                **_user_from_row(row).as_user().model_dump(),
+                last_seen_at=(
+                    float(row["last_seen_at"])
+                    if row["last_seen_at"] is not None
+                    else None
+                ),
+                is_online=bool(
+                    row["last_seen_at"] is not None
+                    and now - float(row["last_seen_at"]) <= ONLINE_WINDOW_SECONDS
+                ),
+            )
+            for row in rows
+        ]
+        users.sort(
+            key=lambda user: (
+                user.is_online,
+                user.last_seen_at or 0,
+            ),
+            reverse=True,
+        )
+        return users
 
 
 def create_user(request: CreateUserRequest) -> AuthUser:

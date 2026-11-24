@@ -120,3 +120,17 @@ def test_admin_can_delete_another_account_but_not_self():
         headers=admin_headers,
     )
     assert self_delete.status_code == 400
+
+
+def test_admin_account_list_reports_online_presence():
+    headers = auth_headers()
+    heartbeat = client.post("/api/auth/heartbeat", headers=headers)
+    assert heartbeat.status_code == 200
+
+    users = client.get("/api/auth/users", headers=headers)
+    assert users.status_code == 200
+    current = next(
+        user for user in users.json() if user["username"] == "test-admin"
+    )
+    assert current["is_online"] is True
+    assert current["last_seen_at"] is not None

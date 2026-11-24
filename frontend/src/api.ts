@@ -1,6 +1,7 @@
 import type {
   AuthUser,
   Diagnostic,
+  ManagedUser,
   Scenario,
   ScheduleResult,
 } from "./types";
@@ -86,8 +87,14 @@ export async function logout(): Promise<void> {
   }
 }
 
-export function fetchUsers(): Promise<AuthUser[]> {
-  return requestJson<AuthUser[]>("/api/auth/users");
+export async function heartbeat(): Promise<void> {
+  await requestJson<{ ok: boolean }>("/api/auth/heartbeat", {
+    method: "POST",
+  });
+}
+
+export function fetchUsers(): Promise<ManagedUser[]> {
+  return requestJson<ManagedUser[]>("/api/auth/users");
 }
 
 export function createUser(input: {

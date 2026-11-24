@@ -15,6 +15,7 @@ from .auth import (
     CreateUserRequest,
     LoginRequest,
     LoginResponse,
+    ManagedUser,
     create_user,
     delete_user,
     init_auth,
@@ -73,6 +74,11 @@ def current_user(user: AuthContext = Depends(require_user)) -> AuthUser:
     return user.as_user()
 
 
+@app.post("/api/auth/heartbeat")
+def heartbeat(_: AuthContext = Depends(require_user)) -> dict[str, bool]:
+    return {"ok": True}
+
+
 @app.post("/api/auth/logout")
 def logout_user(request: Request) -> dict[str, bool]:
     authorization = request.headers.get("Authorization", "")
@@ -81,8 +87,8 @@ def logout_user(request: Request) -> dict[str, bool]:
     return {"ok": True}
 
 
-@app.get("/api/auth/users", response_model=list[AuthUser])
-def users(_: AuthContext = Depends(require_admin)) -> list[AuthUser]:
+@app.get("/api/auth/users", response_model=list[ManagedUser])
+def users(_: AuthContext = Depends(require_admin)) -> list[ManagedUser]:
     return list_users()
 
 

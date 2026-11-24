@@ -1,7 +1,7 @@
 import { Plus, ShieldCheck, UserPlus, X } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { createUser, deleteUser, fetchUsers } from "../api";
-import type { AuthUser } from "../types";
+import type { AuthUser, ManagedUser } from "../types";
 
 type Props = {
   currentUser: AuthUser;
@@ -14,7 +14,7 @@ export default function AccountManager({
   onClose,
   onNotify,
 }: Props) {
-  const [users, setUsers] = useState<AuthUser[]>([]);
+  const [users, setUsers] = useState<ManagedUser[]>([]);
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
@@ -23,8 +23,8 @@ export default function AccountManager({
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState("");
 
-  const load = async () => {
-    setIsLoading(true);
+  const load = async (showLoading = true) => {
+    if (showLoading) setIsLoading(true);
     setError("");
     try {
       setUsers(await fetchUsers());
@@ -37,7 +37,24 @@ export default function AccountManager({
 
   useEffect(() => {
     void load();
+    const timer = window.setInterval(() => {
+      void load(false);
+    }, 15_000);
+    return () => window.clearInterval(timer);
   }, []);
+
+  const presenceLabel = (user: ManagedUser) => {
+    if (user.is_online) return "在线";
+    if (!user.last_seen_at) return "从未登录";
+    const minutes = Math.max(
+      1,
+      Math.floor((Date.now() / 1000 - user.last_seen_at) / 60),
+    );
+    if (minutes < 60) return `${minutes} 分钟前`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} 小时前`;
+    return `${Math.floor(hours / 24)} 天前`;
+  };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -50,7 +67,10 @@ export default function AccountManager({
         password,
         role,
       });
-      setUsers((current) => [...current, user]);
+      setUsers((current) => [
+        ...current,
+        { ...user, last_seen_at: null, is_online: false },
+      ]);
       setUsername("");
       setDisplayName("");
       setPassword("");
@@ -172,7 +192,10 @@ export default function AccountManager({
                 <ShieldCheck size={15} />
                 可登录账号
               </span>
-              <small>{users.length} 个</small>
+              <small>
+                在线 {users.filter((user) => user.is_online).length} /{" "}
+                {users.length}
+              </small>
             </header>
             {isLoading ? (
               <p>正在读取…</p>
@@ -183,6 +206,14 @@ export default function AccountManager({
                   <div>
                     <strong>{user.display_name}</strong>
                     <small>@{user.username}</small>
+                    <span
+                      className={`account-presence ${
+                        user.is_online ? "online" : ""
+                      }`}
+                    >
+                      <i />
+                      {presenceLabel(user)}
+                    </span>
                   </div>
                   <em className={user.role}>
                     {user.role === "admin" ? "管理员" : "普通用户"}

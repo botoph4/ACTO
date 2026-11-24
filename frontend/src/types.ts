@@ -102,3 +102,8 @@ export type AuthUser = {
   display_name: string;
   role: "user" | "admin";
 };
+
+export type ManagedUser = AuthUser & {
+  last_seen_at: number | null;
+  is_online: boolean;
+};

@@ -4656,6 +4656,31 @@ textarea:focus-visible {
   font-size: 8px;
 }
 
+.account-presence {
+  color: #9aa4b4;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 7.5px;
+}
+
+.account-presence i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #c3cad5;
+}
+
+.account-presence.online {
+  color: #2f8a70;
+  font-weight: 600;
+}
+
+.account-presence.online i {
+  background: #36b37e;
+  box-shadow: 0 0 0 2px rgba(54, 179, 126, 0.12);
+}
+
 .account-list article em,
 .account-list article b {
   padding: 3px 5px;
