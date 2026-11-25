@@ -52,6 +52,8 @@ class Task(BaseModel):
         le=1_000_000,
     )
     motion_duration_mode: Literal["auto", "manual"] = "manual"
+    dependency_delay_enabled: bool = False
+    dependency_delay_seconds: float = Field(default=0, ge=0, le=600)
 
     @field_validator("color")
     @classmethod

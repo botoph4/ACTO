@@ -24,6 +24,8 @@ export type Task = {
   motion_velocity_mm_s?: number | null;
   motion_acceleration_mm_s2?: number | null;
   motion_duration_mode?: "auto" | "manual";
+  dependency_delay_enabled?: boolean;
+  dependency_delay_seconds?: number;
 };
 
 export type LoopConfig = {

@@ -612,6 +612,73 @@ export default function Inspector({
           <p className="field-help dependency-help">
             这些动作全部完成后，当前动作才能开始；原来的“等待动作停止”已合并到这里。
           </p>
+          <div
+            className={`dependency-delay-control ${
+              task.dependency_delay_enabled ? "active" : ""
+            }`}
+          >
+            <div>
+              <span>
+                <Clock3 size={12} />
+                前置完成后延时等待
+              </span>
+              <small>
+                {task.dependencies.length
+                  ? "所有前置完成后再额外等待指定时间"
+                  : "添加前置依赖后此选项生效"}
+              </small>
+            </div>
+            <button
+              role="switch"
+              aria-checked={task.dependency_delay_enabled ?? false}
+              type="button"
+              className={`switch ${
+                task.dependency_delay_enabled ? "on" : ""
+              }`}
+              disabled={task.dependencies.length === 0}
+              title={
+                task.dependencies.length
+                  ? "启用或关闭前置延时等待"
+                  : "请先添加前置依赖"
+              }
+              onClick={() =>
+                onChange({
+                  dependency_delay_enabled:
+                    !task.dependency_delay_enabled,
+                  dependency_delay_seconds:
+                    task.dependency_delay_enabled
+                      ? (task.dependency_delay_seconds ?? 0)
+                      : Math.max(0.1, task.dependency_delay_seconds ?? 1),
+                })
+              }
+            >
+              <span />
+            </button>
+          </div>
+          {task.dependency_delay_enabled &&
+            task.dependencies.length > 0 && (
+              <label className="dependency-delay-input">
+                <span>额外等待时间</span>
+                <div>
+                  <input
+                    type="number"
+                    min="0"
+                    max="600"
+                    step="0.1"
+                    value={task.dependency_delay_seconds ?? 0}
+                    onChange={(event) =>
+                      onChange({
+                        dependency_delay_seconds: Math.min(
+                          600,
+                          Math.max(0, Number(event.target.value) || 0),
+                        ),
+                      })
+                    }
+                  />
+                  <em>s</em>
+                </div>
+              </label>
+            )}
           <DependencyEditor
             title="前置 / 等待完成依赖"
             icon={<GitBranch size={14} />}

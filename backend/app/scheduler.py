@@ -189,7 +189,16 @@ def _critical_tasks(
         candidates = [
             item
             for item in task.dependencies + task.stop_after
-            if abs(ends[item] - starts[current]) < 1e-6
+            if abs(
+                ends[item]
+                + (
+                    task.dependency_delay_seconds
+                    if task.dependency_delay_enabled
+                    else 0
+                )
+                - starts[current]
+            )
+            < 1e-6
         ]
         candidates.extend(
             item
@@ -215,8 +224,18 @@ def _drivers(
     result: dict[str, tuple[str | None, float, float]] = {}
 
     for task in scenario.tasks:
+        predecessors = [
+            item
+            for item in task.dependencies + task.stop_after
+            if item in by_id
+        ]
+        dependency_delay = (
+            task.dependency_delay_seconds
+            if task.dependency_delay_enabled and predecessors
+            else 0.0
+        )
         dependency_end = max(
-            (ends[item] for item in task.dependencies + task.stop_after if item in by_id),
+            (ends[item] + dependency_delay for item in predecessors),
             default=0.0,
         )
         resource_end = max(
@@ -232,8 +251,8 @@ def _drivers(
         elif dependency_end > 0:
             candidates = [
                 item
-                for item in task.dependencies + task.stop_after
-                if item in by_id and abs(ends[item] - dependency_end) < 1e-6
+                for item in predecessors
+                if abs(ends[item] + dependency_delay - dependency_end) < 1e-6
             ]
             result[task.id] = (
                 candidates[0] if candidates else None,
@@ -418,6 +437,12 @@ def solve_schedule(
             sum(task.duration for task in effective_scenario.tasks)
             + max(task.duration for task in effective_scenario.tasks)
             + manual_horizon
+            + sum(
+                task.dependency_delay_seconds
+                for task in effective_scenario.tasks
+                if task.dependency_delay_enabled
+                and (task.dependencies or task.stop_after)
+            )
         )
         * TIME_UNITS_PER_SECOND
     )
@@ -445,9 +470,17 @@ def solve_schedule(
             resource_intervals[resource].append(interval)
 
     for task in effective_scenario.tasks:
+        dependency_delay = (
+            round(task.dependency_delay_seconds * TIME_UNITS_PER_SECOND)
+            if task.dependency_delay_enabled
+            and (task.dependencies or task.stop_after)
+            else 0
+        )
         for predecessor in dict.fromkeys(task.dependencies + task.stop_after):
             kind = "stop" if predecessor in task.stop_after else "dependency"
-            model.Add(ends[predecessor] <= starts[task.id])
+            model.Add(
+                ends[predecessor] + dependency_delay <= starts[task.id]
+            )
             links.append(TemporalLink(predecessor, task.id, kind))
 
     for intervals in resource_intervals.values():

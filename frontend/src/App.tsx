@@ -603,6 +603,8 @@ export default function App() {
       motion_velocity_mm_s: null,
       motion_acceleration_mm_s2: null,
       motion_duration_mode: "manual",
+      dependency_delay_enabled: false,
+      dependency_delay_seconds: 0,
     };
     updateScenario({
       ...scenario,

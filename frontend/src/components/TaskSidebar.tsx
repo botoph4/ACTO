@@ -102,6 +102,15 @@ function TaskRow({
                 <span>{task.motion_distance_mm.toFixed(0)}mm</span>
               </>
             )}
+            {task.dependency_delay_enabled &&
+              task.dependencies.length > 0 && (
+                <>
+                  <span className="task-meta-dot">·</span>
+                  <span className="task-delay-badge">
+                    等待 +{(task.dependency_delay_seconds ?? 0).toFixed(1)}s
+                  </span>
+                </>
+              )}
             {isLoopStart && (
               <span className="task-loop-badge head">循环头</span>
             )}

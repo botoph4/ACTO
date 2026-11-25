@@ -202,3 +202,62 @@ def test_legacy_stop_after_is_merged_into_dependencies():
 
     assert task.dependencies == ["dependency", "stop"]
     assert task.stop_after == []
+
+
+def test_dependency_delay_adds_wait_after_last_dependency():
+    scenario = Scenario(
+        id="delay",
+        name="delay",
+        lanes=[
+            Lane(id="left", name="Left", short_name="L", color="#000000"),
+            Lane(id="right", name="Right", short_name="R", color="#111111"),
+        ],
+        tasks=[
+            Task(
+                id="first",
+                name="First",
+                lane="left",
+                duration=1,
+                color="#222222",
+            ),
+            Task(
+                id="second",
+                name="Second",
+                lane="right",
+                duration=2,
+                color="#333333",
+                dependencies=["first"],
+                dependency_delay_enabled=True,
+                dependency_delay_seconds=2,
+            ),
+        ],
+    )
+
+    result = solve_schedule(scenario, time_limit_seconds=1)
+    by_id = {item.id: item for item in result.scheduled_tasks}
+
+    assert by_id["second"].start >= by_id["first"].end + 2 - 1e-6
+    assert abs(result.metrics.makespan - 5) < 1e-6
+
+
+def test_dependency_delay_does_not_apply_without_dependencies():
+    scenario = Scenario(
+        id="delay-no-dependency",
+        name="delay-no-dependency",
+        lanes=[Lane(id="arm", name="Arm", short_name="A", color="#000000")],
+        tasks=[
+            Task(
+                id="only",
+                name="Only",
+                lane="arm",
+                duration=1,
+                color="#222222",
+                dependency_delay_enabled=True,
+                dependency_delay_seconds=5,
+            )
+        ],
+    )
+
+    result = solve_schedule(scenario, time_limit_seconds=1)
+
+    assert abs(result.metrics.makespan - 1) < 1e-6

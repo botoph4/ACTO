@@ -206,6 +206,8 @@ export function scenarioToCsv(scenario: Scenario): string {
       "时长模式",
       "甘特图颜色",
       "前置依赖",
+      "启用前置延时",
+      "前置延时等待(s)",
       "可与其他动作并行",
       "附加占用资源",
       "手动开始时间(s)",
@@ -230,6 +232,10 @@ export function scenarioToCsv(scenario: Scenario): string {
         : "人工",
       task.color,
       task.dependencies.join("|"),
+      task.dependency_delay_enabled ? "是" : "否",
+      task.dependency_delay_enabled
+        ? String(task.dependency_delay_seconds ?? 0)
+        : "",
       task.can_parallel ? "是" : "否",
       task.locked_resources.join("|"),
       task.manual_start == null ? "" : String(task.manual_start),
@@ -382,6 +388,29 @@ export function scenarioFromCsv(
     const legacyStopAfter = splitRefs(
       value(row, "必须停止后执行", "stop_after", "停止条件"),
     );
+    const delayEnabledValue = value(
+      row,
+      "启用前置延时",
+      "dependency_delay_enabled",
+    ).toLowerCase();
+    const dependencyDelayEnabled = ["是", "true", "1", "yes"].includes(
+      delayEnabledValue,
+    );
+    const dependencyDelaySeconds = Number(
+      value(
+        row,
+        "前置延时等待(s)",
+        "dependency_delay_seconds",
+      ) || 0,
+    );
+    if (
+      dependencyDelayEnabled &&
+      (!Number.isFinite(dependencyDelaySeconds) ||
+        dependencyDelaySeconds < 0 ||
+        dependencyDelaySeconds > 600)
+    ) {
+      throw new Error(`第 ${rowIndex + 2} 行前置延时等待时间无效`);
+    }
     tasks.push({
       id: value(row, "任务ID", "id") || `imported_${rowIndex + 1}`,
       name: taskName,
@@ -405,6 +434,10 @@ export function scenarioFromCsv(
       locked_resources: splitRefs(
         value(row, "附加占用资源", "locked_resources"),
       ),
+      dependency_delay_enabled: dependencyDelayEnabled,
+      dependency_delay_seconds: dependencyDelayEnabled
+        ? dependencyDelaySeconds
+        : 0,
       manual_start: (() => {
         const raw = value(row, "手动开始时间(s)", "manual_start");
         if (!raw) return null;

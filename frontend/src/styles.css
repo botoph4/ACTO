@@ -1483,6 +1483,14 @@ textarea:focus-visible {
   background: #f0f2f5;
 }
 
+.task-delay-badge {
+  color: #a0692d;
+  background: #fff4e4;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
 .task-meta {
   color: #8d96a7;
   display: flex;
@@ -2979,10 +2987,12 @@ textarea:focus-visible {
 .bar-duration {
   position: absolute;
   z-index: 1;
-  right: 7px;
-  bottom: 5px;
-  color: rgba(255, 255, 255, 0.72);
-  font: 500 calc(7px * var(--font-scale, 1))/1 "DM Mono", monospace;
+  right: 8px;
+  bottom: 4px;
+  color: rgba(255, 255, 255, 0.96);
+  font: 700 calc(9.5px * var(--font-scale, 1))/1 "DM Mono", monospace;
+  letter-spacing: 0.1px;
+  text-shadow: 0 1px 3px rgba(20, 30, 50, 0.38);
 }
 
 .critical-rail {
@@ -3680,6 +3690,11 @@ textarea:focus-visible {
   transform: translateX(14px);
 }
 
+.switch:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
 .inline-alert {
   margin-top: 9px;
   padding: 7px 8px;
@@ -3739,6 +3754,82 @@ textarea:focus-visible {
 .dependency-section {
   padding-top: 9px;
   padding-bottom: 9px;
+}
+
+.dependency-delay-control {
+  margin-bottom: 9px;
+  padding: 8px 9px;
+  border: 1px solid #e7ebf1;
+  border-radius: 8px;
+  background: #fafbfc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dependency-delay-control.active {
+  border-color: #eadbbf;
+  background: #fffaf1;
+}
+
+.dependency-delay-control > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dependency-delay-control > div > span {
+  color: #58657a;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: calc(8.2px * var(--font-scale, 1));
+  font-weight: 600;
+}
+
+.dependency-delay-control small {
+  color: #98a1b0;
+  font-size: calc(7px * var(--font-scale, 1));
+  line-height: 1.35;
+}
+
+.dependency-delay-input {
+  height: 30px;
+  margin: -2px 0 9px;
+  padding: 0 7px 0 9px;
+  border: 1px solid #ece2cf;
+  border-radius: 7px;
+  color: #8a704d;
+  background: #fffdf8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: calc(8px * var(--font-scale, 1));
+}
+
+.dependency-delay-input > div {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.dependency-delay-input input {
+  width: 65px;
+  border: 0;
+  outline: 0;
+  color: #8f5c24;
+  background: transparent;
+  text-align: right;
+  font: 600 calc(9px * var(--font-scale, 1))/1 "DM Mono", monospace;
+}
+
+.dependency-delay-input em {
+  color: #a88a64;
+  font-size: calc(7px * var(--font-scale, 1));
+  font-style: normal;
 }
 
 .dependency-editor + .dependency-editor {
