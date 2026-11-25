@@ -3010,26 +3010,28 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   overflow: hidden;
-  font: 700 calc(6.2px * var(--font-scale, 1))/1 "DM Mono", monospace;
+  font: 600 calc(8.6px * var(--font-scale, 1))/1.28
+    "Manrope", "Noto Sans SC", sans-serif;
   text-shadow: none;
   white-space: nowrap;
   pointer-events: none;
 }
 
 .bar-delay-value em {
-  font-size: 0.78em;
+  font-size: inherit;
+  font-weight: inherit;
   font-style: normal;
-  opacity: 0.78;
+  opacity: 0.9;
 }
 
 .bar-delay-value.compact em {
-  display: none;
+  display: inline;
 }
 
 .bar-delay-value.compact {
-  font-size: calc(5.4px * var(--font-scale, 1));
+  font-size: calc(8.6px * var(--font-scale, 1));
 }
 
 .bar-duration {
