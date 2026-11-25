@@ -2984,6 +2984,54 @@ textarea:focus-visible {
   height: 4px;
 }
 
+.bar-delay-segment {
+  position: absolute;
+  z-index: 1;
+  inset: 0 auto 0 0;
+  border-right: 1px dashed rgba(92, 103, 120, 0.55);
+  border-radius: 7px 0 0 7px;
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.22) 0,
+      rgba(255, 255, 255, 0.22) 4px,
+      transparent 4px,
+      transparent 8px
+    ),
+    #d8dde5;
+}
+
+.bar-delay-value {
+  position: absolute;
+  z-index: 3;
+  inset: 0 auto 0 0;
+  padding: 0 1px;
+  color: #596273;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  overflow: hidden;
+  font: 700 calc(6.2px * var(--font-scale, 1))/1 "DM Mono", monospace;
+  text-shadow: none;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.bar-delay-value em {
+  font-size: 0.78em;
+  font-style: normal;
+  opacity: 0.78;
+}
+
+.bar-delay-value.compact em {
+  display: none;
+}
+
+.bar-delay-value.compact {
+  font-size: calc(5.4px * var(--font-scale, 1));
+}
+
 .bar-duration {
   position: absolute;
   z-index: 1;

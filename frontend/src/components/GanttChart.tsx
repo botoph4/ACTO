@@ -21,7 +21,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import type { Scenario, ScheduledTask, ScheduleResult } from "../types";
+import type { Scenario, ScheduledTask, ScheduleResult, Task } from "../types";
 import { clamp, formatSeconds } from "../utils";
 
 const ROW_HEIGHT = 64;
@@ -97,6 +97,16 @@ type ConnectorPath = {
   bend: number;
   loop?: boolean;
 };
+
+function dependencyDelaySeconds(task: Task): number {
+  if (
+    !task.dependency_delay_enabled ||
+    task.dependencies.length === 0
+  ) {
+    return 0;
+  }
+  return Math.max(0, task.dependency_delay_seconds ?? 0);
+}
 
 function drawConnector(
   context: CanvasRenderingContext2D,
@@ -474,9 +484,11 @@ export default function GanttChart({
                     ? timePreview.end
                     : sourceSchedule.end) * scale;
                 const x2 =
-                  (repeatIndex === 0 && timePreview?.taskId === target.id
+                  ((repeatIndex === 0 && timePreview?.taskId === target.id
                     ? timePreview.start
-                    : targetSchedule.start) * scale;
+                    : targetSchedule.start) -
+                    dependencyDelaySeconds(target)) *
+                  scale;
                 const y1 = sourceLane.top + sourceLane.height / 2;
                 const y2 = targetLane.top + targetLane.height / 2;
                 const bend = Math.max(
@@ -522,7 +534,10 @@ export default function GanttChart({
             const targetLane = laneLayoutMap.get(startTask.lane);
             if (!sourceLane || !targetLane) return null;
             const x1 = releaseInstance.end * scale;
-            const x2 = nextStartInstance.start * scale;
+            const x2 =
+              (nextStartInstance.start -
+                dependencyDelaySeconds(startTask)) *
+              scale;
             const y1 = sourceLane.top + sourceLane.height / 2;
             const y2 = targetLane.top + targetLane.height / 2;
             const bend = Math.max(
@@ -911,6 +926,11 @@ export default function GanttChart({
                         preview?.duration ?? item.duration;
                       const barLayout = barLayouts.get(item.instanceId);
                       const width = barLayout?.width ?? MIN_BAR_WIDTH;
+                      const delaySeconds = dependencyDelaySeconds(task);
+                      const delayWidth = delaySeconds * scale;
+                      const visualLeft =
+                        (displayStart - delaySeconds) * scale;
+                      const visualWidth = width + delayWidth;
                       const barHeight = barLayout?.height ?? 44;
                       const barTop = Math.max(
                         8,
@@ -963,13 +983,14 @@ export default function GanttChart({
                               manual ? "manual" : "",
                               activelyDragging ? "dragging" : "",
                               item.repeatIndex > 0 ? "repeat-instance" : "",
+                              delayWidth > 0 ? "with-delay" : "",
                             ]
                               .filter(Boolean)
                               .join(" ")}
                             style={{
-                              left: displayStart * scale,
+                              left: visualLeft,
                               top: barTop,
-                              width,
+                              width: visualWidth,
                               height: barHeight,
                               background: task.color,
                               "--bar-color": task.color,
@@ -992,9 +1013,31 @@ export default function GanttChart({
                                 ? () => finishDrag(false)
                                 : undefined
                             }
-                            title={`${code} · ${task.name}${isLoopStart ? " · 循环开始" : ""}${isLoopEnd ? " · 循环结束/回跳" : ""}\n第 ${item.repeatIndex + 1} 次 · ${displayStart.toFixed(2)}s → ${displayEnd.toFixed(2)}s · ${displayDuration.toFixed(1)}s${manual ? " · 手动调整" : ""}${draggable ? "\n拖动移动，拖动边缘调整时长" : "\n重复实例由模板和重复次数生成"}`}
+                            title={`${code} · ${task.name}${isLoopStart ? " · 循环开始" : ""}${isLoopEnd ? " · 循环结束/回跳" : ""}\n第 ${item.repeatIndex + 1} 次 · ${displayStart.toFixed(2)}s → ${displayEnd.toFixed(2)}s · ${displayDuration.toFixed(1)}s${delaySeconds > 0 ? ` · 前置等待 ${delaySeconds.toFixed(1)}s` : ""}${manual ? " · 手动调整" : ""}${draggable ? "\n拖动移动，拖动边缘调整时长" : "\n重复实例由模板和重复次数生成"}`}
                           >
-                            <span className="bar-content">
+                            {delayWidth > 0 && (
+                              <>
+                                <span
+                                  className="bar-delay-segment"
+                                  style={{ width: delayWidth }}
+                                />
+                                <span
+                                  className={`bar-delay-value ${
+                                    delayWidth < 30 ? "compact" : ""
+                                  }`}
+                                  style={{ width: delayWidth }}
+                                >
+                                  <em>等待</em>
+                                  {delaySeconds % 1 === 0
+                                    ? `${delaySeconds.toFixed(0)}s`
+                                    : `${delaySeconds.toFixed(1)}s`}
+                                </span>
+                              </>
+                            )}
+                            <span
+                              className="bar-content"
+                              style={{ marginLeft: delayWidth }}
+                            >
                               <span className="bar-meta-line">
                                 <span className="bar-code">
                                   {code}
@@ -1019,7 +1062,14 @@ export default function GanttChart({
                               </span>
                             )}
                             {item.critical && (
-                              <span className="critical-rail" />
+                              <span
+                                className="critical-rail"
+                                style={
+                                  delayWidth > 0
+                                    ? { left: delayWidth + 5 }
+                                    : undefined
+                                }
+                              />
                             )}
                             {manual && <span className="manual-pin" />}
                             {selected && (
@@ -1029,6 +1079,11 @@ export default function GanttChart({
                               <>
                                 <span
                                   className="bar-resize-handle resize-left"
+                                  style={
+                                    delayWidth > 0
+                                      ? { left: delayWidth }
+                                      : undefined
+                                  }
                                   onPointerDown={(event) =>
                                     beginDrag(
                                       event,
