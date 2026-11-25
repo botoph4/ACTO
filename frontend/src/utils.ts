@@ -24,6 +24,54 @@ export function formatSeconds(value: number, digits = 1): string {
   return `${value.toFixed(digits)}s`;
 }
 
+export type MotionProfile = {
+  duration: number;
+  peakVelocity: number;
+  accelerationTime: number;
+  cruiseTime: number;
+  accelerationDistance: number;
+  reachesMaxVelocity: boolean;
+};
+
+export function calculateTrapezoidalProfile(
+  distanceMm: number,
+  maxVelocityMmS: number,
+  accelerationMmS2: number,
+): MotionProfile | null {
+  if (
+    !Number.isFinite(distanceMm) ||
+    !Number.isFinite(maxVelocityMmS) ||
+    !Number.isFinite(accelerationMmS2) ||
+    distanceMm <= 0 ||
+    maxVelocityMmS <= 0 ||
+    accelerationMmS2 <= 0
+  ) {
+    return null;
+  }
+
+  const fullAccelerationDistance =
+    (maxVelocityMmS * maxVelocityMmS) / accelerationMmS2;
+  const reachesMaxVelocity = distanceMm > fullAccelerationDistance;
+  const peakVelocity = reachesMaxVelocity
+    ? maxVelocityMmS
+    : Math.sqrt(distanceMm * accelerationMmS2);
+  const accelerationTime = peakVelocity / accelerationMmS2;
+  const cruiseTime = reachesMaxVelocity
+    ? (distanceMm - fullAccelerationDistance) / maxVelocityMmS
+    : 0;
+
+  return {
+    duration: 2 * accelerationTime + cruiseTime,
+    peakVelocity,
+    accelerationTime,
+    cruiseTime,
+    accelerationDistance: reachesMaxVelocity
+      ? fullAccelerationDistance
+      : distanceMm,
+    reachesMaxVelocity,
+  };
+}
+
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
@@ -151,6 +199,11 @@ export function scenarioToCsv(scenario: Scenario): string {
       "分类",
       "执行单元",
       "预计耗时(s)",
+      "运动类型",
+      "运动行程(mm)",
+      "最大速度(mm/s)",
+      "加速度(mm/s²)",
+      "时长模式",
       "甘特图颜色",
       "前置依赖",
       "可与其他动作并行",
@@ -164,6 +217,17 @@ export function scenarioToCsv(scenario: Scenario): string {
       task.category,
       task.lane,
       String(task.duration),
+      task.motion_type === "motion" ? "运动" : "非运动",
+      task.motion_type === "motion" ? String(task.motion_distance_mm ?? "") : "",
+      task.motion_type === "motion" ? String(task.motion_velocity_mm_s ?? "") : "",
+      task.motion_type === "motion"
+        ? String(task.motion_acceleration_mm_s2 ?? "")
+        : "",
+      task.motion_type === "motion"
+        ? task.motion_duration_mode === "manual"
+          ? "人工"
+          : "自动"
+        : "人工",
       task.color,
       task.dependencies.join("|"),
       task.can_parallel ? "是" : "否",
@@ -247,7 +311,61 @@ export function scenarioFromCsv(
     if (!laneIds.has(lane)) {
       throw new Error(`第 ${rowIndex + 2} 行引用了不存在的执行单元：${lane}`);
     }
-    const duration = Number(value(row, "预计耗时(s)", "duration", "耗时"));
+    const motionTypeText = value(
+      row,
+      "运动类型",
+      "motion_type",
+    ).toLowerCase();
+    const motionType = ["运动", "motion", "true", "是", "1"].includes(
+      motionTypeText,
+    )
+      ? "motion"
+      : "non_motion";
+    const numberValue = (...aliases: string[]): number | null => {
+      const raw = value(row, ...aliases);
+      if (!raw) return null;
+      const parsed = Number(raw);
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    };
+    const motionDistance = numberValue("运动行程(mm)", "motion_distance_mm");
+    const motionVelocity = numberValue(
+      "最大速度(mm/s)",
+      "motion_velocity_mm_s",
+    );
+    const motionAcceleration = numberValue(
+      "加速度(mm/s²)",
+      "motion_acceleration_mm_s2",
+      "加速度(mm/s2)",
+    );
+    const durationModeText = value(row, "时长模式", "motion_duration_mode");
+    const motionDurationMode =
+      motionType === "motion" &&
+      !["人工", "manual"].includes(durationModeText.toLowerCase())
+        ? "auto"
+        : "manual";
+    const motionProfile =
+      motionType === "motion" &&
+      motionDistance != null &&
+      motionVelocity != null &&
+      motionAcceleration != null
+        ? calculateTrapezoidalProfile(
+            motionDistance,
+            motionVelocity,
+            motionAcceleration,
+          )
+        : null;
+    if (motionType === "motion" && !motionProfile) {
+      throw new Error(
+        `第 ${rowIndex + 2} 行运动参数无效，请填写行程、最大速度和加速度`,
+      );
+    }
+    const importedDuration = Number(
+      value(row, "预计耗时(s)", "duration", "耗时"),
+    );
+    const duration =
+      motionType === "motion" && motionDurationMode === "auto"
+        ? motionProfile!.duration
+        : importedDuration;
     if (!Number.isFinite(duration) || duration <= 0) {
       throw new Error(`第 ${rowIndex + 2} 行动作耗时无效`);
     }
@@ -269,7 +387,13 @@ export function scenarioFromCsv(
       name: taskName,
       category: value(row, "分类", "category") || "导入动作",
       lane,
-      duration,
+      duration: Math.round(duration * 1000) / 1000,
+      motion_type: motionType,
+      motion_distance_mm: motionType === "motion" ? motionDistance : null,
+      motion_velocity_mm_s: motionType === "motion" ? motionVelocity : null,
+      motion_acceleration_mm_s2:
+        motionType === "motion" ? motionAcceleration : null,
+      motion_duration_mode: motionDurationMode,
       color:
         value(row, "甘特图颜色", "color") ||
         laneColor,

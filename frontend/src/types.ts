@@ -19,6 +19,11 @@ export type Task = {
   locked_resources: string[];
   notes: string;
   manual_start?: number | null;
+  motion_type?: "motion" | "non_motion";
+  motion_distance_mm?: number | null;
+  motion_velocity_mm_s?: number | null;
+  motion_acceleration_mm_s2?: number | null;
+  motion_duration_mode?: "auto" | "manual";
 };
 
 export type LoopConfig = {
