@@ -70,7 +70,7 @@ import {
 const STORAGE_KEY = "acto-workspaces-v3";
 const LEGACY_STORAGE_KEY = "m1-cycle-studio-scenario-v2";
 const UI_SCALE_KEY = "acto-ui-scale";
-const APP_VERSION = "0.2.0";
+const APP_VERSION = "0.2.1";
 
 const UI_SCALE_OPTIONS = [
   { label: "50%", value: 0.5 },
@@ -534,9 +534,18 @@ export default function App() {
   const updateTask = (taskId: string, patch: Partial<Task>) => {
     updateScenario((current) => ({
       ...current,
-      tasks: current.tasks.map((task) =>
-        task.id === taskId ? { ...task, ...patch } : task,
-      ),
+    tasks: current.tasks.map((task) => {
+      if (task.id !== taskId) return task;
+      const nextTask = { ...task, ...patch };
+      if (
+        "duration" in patch &&
+        nextTask.motion_type === "motion" &&
+        patch.motion_duration_mode === undefined
+      ) {
+        nextTask.motion_duration_mode = "manual";
+      }
+      return nextTask;
+    }),
     }));
   };
 
@@ -589,6 +598,11 @@ export default function App() {
       locked_resources: [],
       notes: "",
       manual_start: null,
+      motion_type: "non_motion",
+      motion_distance_mm: null,
+      motion_velocity_mm_s: null,
+      motion_acceleration_mm_s2: null,
+      motion_duration_mode: "manual",
     };
     updateScenario({
       ...scenario,

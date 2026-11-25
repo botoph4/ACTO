@@ -1,7 +1,7 @@
 {
   "name": "acto",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "scripts": {
     "install:all": "npm --prefix frontend install && python3 -m pip install -r backend/requirements.txt",
     "dev": "concurrently -n API,WEB -c cyan,green \"npm run dev:api\" \"npm run dev:web\"",

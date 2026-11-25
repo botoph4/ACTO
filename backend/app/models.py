@@ -1,8 +1,25 @@
 from __future__ import annotations
 
+from math import sqrt
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+
+
+def trapezoidal_motion_duration(
+    distance_mm: float,
+    max_velocity_mm_s: float,
+    acceleration_mm_s2: float,
+) -> float:
+    """Return minimum duration for a symmetric trapezoidal velocity profile."""
+    acceleration_distance = (
+        max_velocity_mm_s * max_velocity_mm_s / acceleration_mm_s2
+    )
+    if distance_mm <= acceleration_distance:
+        return 2 * sqrt(distance_mm / acceleration_mm_s2)
+    return distance_mm / max_velocity_mm_s + (
+        max_velocity_mm_s / acceleration_mm_s2
+    )
 
 
 class Lane(BaseModel):
@@ -26,6 +43,15 @@ class Task(BaseModel):
     locked_resources: list[str] = Field(default_factory=list)
     notes: str = ""
     manual_start: float | None = Field(default=None, ge=0, le=600)
+    motion_type: Literal["motion", "non_motion"] = "non_motion"
+    motion_distance_mm: float | None = Field(default=None, gt=0, le=1_000_000)
+    motion_velocity_mm_s: float | None = Field(default=None, gt=0, le=1_000_000)
+    motion_acceleration_mm_s2: float | None = Field(
+        default=None,
+        gt=0,
+        le=1_000_000,
+    )
+    motion_duration_mode: Literal["auto", "manual"] = "manual"
 
     @field_validator("color")
     @classmethod
@@ -40,6 +66,21 @@ class Task(BaseModel):
             dict.fromkeys([*self.dependencies, *self.stop_after])
         )
         self.stop_after = []
+        if self.motion_type == "motion":
+            distance = self.motion_distance_mm
+            velocity = self.motion_velocity_mm_s
+            acceleration = self.motion_acceleration_mm_s2
+            if distance is None or velocity is None or acceleration is None:
+                raise ValueError("运动部件必须填写运动行程、最大速度和加速度")
+            if self.motion_duration_mode == "auto":
+                self.duration = round(
+                    trapezoidal_motion_duration(
+                        distance,
+                        velocity,
+                        acceleration,
+                    ),
+                    3,
+                )
         return self
 
 

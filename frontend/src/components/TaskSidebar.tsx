@@ -1,4 +1,5 @@
 import {
+  Activity,
   Boxes,
   ChevronRight,
   CircleDot,
@@ -53,6 +54,7 @@ function TaskRow({
   onSetLoopStart: () => void;
   onSetLoopEnd: () => void;
 }) {
+  const isMotion = task.motion_type === "motion";
   return (
     <div className={`task-row ${selected ? "task-row-selected" : ""}`}>
       <button className="task-row-main" onClick={onSelect} type="button">
@@ -69,12 +71,37 @@ function TaskRow({
         <span className="task-main">
           <span className="task-name">
             {task.name}
+            <span
+              className={`task-kind-badge ${
+                isMotion ? "motion" : "non-motion"
+              }`}
+              title={
+                isMotion
+                  ? "运动部件：时长由梯形速度规划计算，可人工覆盖"
+                  : "非运动部件：直接使用人工设置时长"
+              }
+            >
+              <Activity size={9} />
+              {isMotion ? "运动" : "非运动"}
+            </span>
             {critical && <span className="critical-dot" title="关键路径动作" />}
           </span>
           <span className="task-meta">
             <span>{lane?.name ?? "未分配"}</span>
             <span className="task-meta-dot">·</span>
-            <span>{task.duration.toFixed(1)}s</span>
+            <span>
+              {task.duration.toFixed(1)}s
+              {isMotion &&
+                (task.motion_duration_mode === "manual"
+                  ? " · 人工"
+                  : " · 自动")}
+            </span>
+            {isMotion && task.motion_distance_mm != null && (
+              <>
+                <span className="task-meta-dot">·</span>
+                <span>{task.motion_distance_mm.toFixed(0)}mm</span>
+              </>
+            )}
             {isLoopStart && (
               <span className="task-loop-badge head">循环头</span>
             )}
@@ -145,9 +172,14 @@ export default function TaskSidebar({
   const filtered = query
     ? scenario.tasks.filter((task) => {
         const lane = laneMap.get(task.lane);
-        return [task.name, task.category, lane?.name ?? ""].some((value) =>
-          value.toLowerCase().includes(query),
-        );
+        const motionLabel =
+          task.motion_type === "motion" ? "运动 motion" : "非运动 non-motion";
+        return [
+          task.name,
+          task.category,
+          lane?.name ?? "",
+          motionLabel,
+        ].some((value) => value.toLowerCase().includes(query));
       })
     : scenario.tasks;
 
