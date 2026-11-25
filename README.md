@@ -2,6 +2,8 @@
 
 **Automation Cycle Time Optimizer** 是面向双臂轮式机器人的动作级节拍仿真软件。
 
+当前版本：`0.2.1`
+
 [GitHub 仓库](https://github.com/botoph4/ACTO) ·
 [完整使用说明书（PDF）](docs/ACTO-Cycle-Studio-使用说明.pdf) ·
 [局域网系统](http://10.8.1.106:18090)
