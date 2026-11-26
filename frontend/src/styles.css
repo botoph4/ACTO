@@ -1649,7 +1649,7 @@ textarea:focus-visible {
 
 .metric-card {
   min-width: 0;
-  height: 134px;
+  height: 116px;
   padding: 14px;
   background: white;
   border: 1px solid var(--line);
@@ -1706,7 +1706,7 @@ textarea:focus-visible {
 }
 
 .metric-detail-card {
-  padding: 10px;
+  padding: 8px 10px;
   gap: 6px;
 }
 
@@ -1721,7 +1721,7 @@ textarea:focus-visible {
   margin-top: 4px;
   display: grid;
   gap: 0;
-  max-height: 94px;
+  max-height: 74px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scroll-snap-type: y mandatory;
@@ -1820,14 +1820,6 @@ textarea:focus-visible {
 .metric-foot-error {
   color: #b25255;
   font-weight: 600;
-}
-
-.metric-sequence {
-  position: absolute;
-  right: 10px;
-  bottom: 7px;
-  font: 500 calc(8px * var(--font-scale, 1))/1 "DM Mono", monospace;
-  color: #d4d9e2;
 }
 
 .insight-line {

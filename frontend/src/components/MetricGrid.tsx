@@ -53,7 +53,6 @@ export default function MetricGrid({
                 : "等待排程结果"}
           </span>
         </div>
-        <span className="metric-sequence">01</span>
       </article>
 
       <article className="metric-card">
