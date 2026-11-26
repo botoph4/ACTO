@@ -2141,16 +2141,6 @@ textarea:focus-visible {
   font-size: calc(7px * var(--font-scale, 1));
 }
 
-.repeat-note {
-  grid-column: 3;
-  grid-row: 1;
-  flex: 0 0 auto;
-  margin: 0 0 0 auto;
-  color: #9aa3b2;
-  font-size: calc(7.5px * var(--font-scale, 1));
-  white-space: nowrap;
-}
-
 .repeat-loop-row {
   grid-column: 1 / -1;
   grid-row: 2;

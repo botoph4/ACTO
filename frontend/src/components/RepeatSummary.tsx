@@ -170,7 +170,6 @@ export default function RepeatSummary({
         </small>
       </div>
 
-      <p className="repeat-note">动作模板只需维护一份，修改次数不会复制动作。</p>
     </section>
   );
 }
