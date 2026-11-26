@@ -778,7 +778,7 @@ export default function GanttChart({
                   <em>s / 件</em>
                 </span>
               </span>
-              {repeatCount > 3 && (
+              {repeatCount > 1 && (
                 <span className="gantt-export-metric shortest">
                   <small>最短 CT</small>
                   <span>

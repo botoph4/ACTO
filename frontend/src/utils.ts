@@ -65,10 +65,27 @@ export function calculateCycleTiming(
   const cycleDurations =
     startTaskId === endTaskId
       ? Array.from(
-          { length: Math.max(0, effectiveRepeat - 3) },
+          {
+            length:
+              effectiveRepeat === 2
+                ? 1
+                : effectiveRepeat === 3
+                  ? 1
+                  : Math.max(0, effectiveRepeat - 3),
+          },
           (_, index) => {
-            const currentStart = startsByIteration.get(index + 2);
-            const nextStart = startsByIteration.get(index + 3);
+            const startIteration =
+              effectiveRepeat === 2
+                ? 1
+                : effectiveRepeat === 3
+                  ? 2
+                  : index + 2;
+            const endIteration =
+              effectiveRepeat === 3
+                ? 3
+                : startIteration + 1;
+            const currentStart = startsByIteration.get(startIteration);
+            const nextStart = startsByIteration.get(endIteration);
             return currentStart == null || nextStart == null
               ? null
               : nextStart - currentStart;
@@ -78,9 +95,9 @@ export function calculateCycleTiming(
             duration != null && duration >= 0,
         )
       : Array.from(
-          { length: Math.max(0, effectiveRepeat - 2) },
+          { length: effectiveRepeat === 2 ? 1 : Math.max(0, effectiveRepeat - 2) },
           (_, index) => {
-            const iteration = index + 2;
+            const iteration = effectiveRepeat === 2 ? 2 : index + 2;
             const start = startsByIteration.get(iteration);
             const end = endsByIteration.get(iteration);
             return start == null || end == null ? null : end - start;
