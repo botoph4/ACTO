@@ -156,6 +156,8 @@ type Props = {
   repeatCount: number;
   cycleTime: number | null;
   shortestCycleTime: number | null;
+  ctStartTaskId: string | null;
+  ctEndTaskId: string | null;
   fontScale: number;
   onSelect: (taskId: string) => void;
   onExportCsv: () => void;
@@ -179,6 +181,8 @@ export default function GanttChart({
   repeatCount,
   cycleTime,
   shortestCycleTime,
+  ctStartTaskId,
+  ctEndTaskId,
   fontScale,
   onSelect,
   onExportCsv,
@@ -236,13 +240,27 @@ export default function GanttChart({
       ),
     [instances],
   );
-  const cycleStartInstances = useMemo(
+  const ctCycleInstances = useMemo(
     () =>
       instances
-        .filter((item) => item.templateId === loopStartTaskId)
+        .filter((item) => item.templateId === ctStartTaskId)
         .sort((left, right) => left.repeatIndex - right.repeatIndex),
-    [instances, loopStartTaskId],
+    [instances, ctStartTaskId],
   );
+  const ctCycleRanges = ctCycleInstances.map((startInstance, index) => {
+    const nextStart = ctCycleInstances[index + 1];
+    const endInstance = instanceByTemplateIteration.get(
+      `${ctEndTaskId}__${startInstance.repeatIndex + 1}`,
+    );
+    const endTime =
+      ctStartTaskId === ctEndTaskId
+        ? nextStart?.start ?? null
+        : endInstance?.end ?? null;
+    return {
+      startInstance,
+      endTime,
+    };
+  });
   const barLayouts = useMemo(() => {
     const result = new Map<
       string,
@@ -798,7 +816,7 @@ export default function GanttChart({
               style={{ width: timelineWidth, ...gridStyle }}
             >
               {ticks.map((tick) => {
-                const overlapsCycleStart = cycleStartInstances.some(
+                const overlapsCycleStart = ctCycleInstances.some(
                   (instance) =>
                     Math.abs(instance.start - tick) * scale < 44,
                 );
@@ -821,14 +839,19 @@ export default function GanttChart({
                 );
               })}
               {schedule &&
-                cycleStartInstances.map((startInstance, repeatIndex) => (
+                ctCycleRanges.map(({ startInstance, endTime }, repeatIndex) => (
                   <div
                     className="cycle-band-label"
                     key={`cycle-label-${repeatIndex}`}
                     style={{ left: startInstance.start * scale + 5 }}
                   >
                     <span>第 {repeatIndex + 1} 次</span>
-                    <small>{formatSeconds(startInstance.start, 1)}</small>
+                    <small>
+                      {formatSeconds(startInstance.start, 1)}
+                      {endTime == null
+                        ? ""
+                        : `–${formatSeconds(endTime, 1)}`}
+                    </small>
                   </div>
                 ))}
               {schedule && (
@@ -912,7 +935,7 @@ export default function GanttChart({
 
             {schedule && (
               <>
-                {cycleStartInstances.slice(1).map((startInstance, index) => (
+                {ctCycleInstances.slice(1).map((startInstance, index) => (
                   <div
                     className="cycle-divider-line"
                     key={`cycle-divider-${index}`}
