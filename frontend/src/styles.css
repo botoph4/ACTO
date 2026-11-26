@@ -1725,7 +1725,7 @@ textarea:focus-visible {
   margin-top: 3px;
   display: grid;
   gap: 0;
-  max-height: 45px;
+  max-height: 52px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scroll-snap-type: y mandatory;
