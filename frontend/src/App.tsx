@@ -1732,7 +1732,6 @@ export default function App() {
             cycleTime={cycleTime}
             shortestCycleTime={shortestCycleTime}
             ctStartTaskId={ctStartTaskId}
-            ctEndTaskId={ctEndTaskId}
             fontScale={uiScale}
             onSelect={setSelectedTaskId}
             onExportCsv={exportCsv}

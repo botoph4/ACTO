@@ -157,7 +157,6 @@ type Props = {
   cycleTime: number | null;
   shortestCycleTime: number | null;
   ctStartTaskId: string | null;
-  ctEndTaskId: string | null;
   fontScale: number;
   onSelect: (taskId: string) => void;
   onExportCsv: () => void;
@@ -182,7 +181,6 @@ export default function GanttChart({
   cycleTime,
   shortestCycleTime,
   ctStartTaskId,
-  ctEndTaskId,
   fontScale,
   onSelect,
   onExportCsv,
@@ -247,20 +245,6 @@ export default function GanttChart({
         .sort((left, right) => left.repeatIndex - right.repeatIndex),
     [instances, ctStartTaskId],
   );
-  const ctCycleRanges = ctCycleInstances.map((startInstance, index) => {
-    const nextStart = ctCycleInstances[index + 1];
-    const endInstance = instanceByTemplateIteration.get(
-      `${ctEndTaskId}__${startInstance.repeatIndex + 1}`,
-    );
-    const endTime =
-      ctStartTaskId === ctEndTaskId
-        ? nextStart?.start ?? null
-        : endInstance?.end ?? null;
-    return {
-      startInstance,
-      endTime,
-    };
-  });
   const barLayouts = useMemo(() => {
     const result = new Map<
       string,
@@ -839,19 +823,14 @@ export default function GanttChart({
                 );
               })}
               {schedule &&
-                ctCycleRanges.map(({ startInstance, endTime }, repeatIndex) => (
+                ctCycleInstances.map((startInstance, repeatIndex) => (
                   <div
                     className="cycle-band-label"
                     key={`cycle-label-${repeatIndex}`}
                     style={{ left: startInstance.start * scale + 5 }}
                   >
                     <span>第 {repeatIndex + 1} 次</span>
-                    <small>
-                      {formatSeconds(startInstance.start, 1)}
-                      {endTime == null
-                        ? ""
-                        : `–${formatSeconds(endTime, 1)}`}
-                    </small>
+                    <small>{formatSeconds(startInstance.start, 1)}</small>
                   </div>
                 ))}
               {schedule && (
