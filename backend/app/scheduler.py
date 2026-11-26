@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import heapq
+import os
 from collections import defaultdict, deque
 from dataclasses import dataclass
 from time import perf_counter
@@ -16,6 +18,26 @@ from .models import (
 )
 
 TIME_UNITS_PER_SECOND = 10
+
+
+def _solver_worker_count() -> int:
+    configured = os.getenv("ACTO_SOLVER_WORKERS")
+    if configured:
+        try:
+            return max(1, min(16, int(configured)))
+        except ValueError:
+            pass
+    return max(1, min(8, os.cpu_count() or 1))
+
+
+def _solver_relative_gap() -> float:
+    configured = os.getenv("ACTO_SOLVER_RELATIVE_GAP")
+    if configured:
+        try:
+            return max(0.0, min(1.0, float(configured)))
+        except ValueError:
+            pass
+    return 0.01
 
 
 class ScheduleValidationError(ValueError):
@@ -411,6 +433,101 @@ def _expand_cycles(
     )
 
 
+def _greedy_schedule_hint(scenario: Scenario) -> dict[str, int]:
+    task_by_id = {task.id: task for task in scenario.tasks}
+    dependencies = {
+        task.id: list(dict.fromkeys(task.dependencies + task.stop_after))
+        for task in scenario.tasks
+    }
+    successors: dict[str, list[str]] = defaultdict(list)
+    indegree = {
+        task.id: len(dependencies[task.id])
+        for task in scenario.tasks
+    }
+    for task_id, predecessor_ids in dependencies.items():
+        for predecessor in predecessor_ids:
+            successors[predecessor].append(task_id)
+
+    ready = [task_id for task_id, degree in indegree.items() if degree == 0]
+    topological: list[str] = []
+    while ready:
+        task_id = ready.pop()
+        topological.append(task_id)
+        for successor in successors[task_id]:
+            indegree[successor] -= 1
+            if indegree[successor] == 0:
+                ready.append(successor)
+
+    remaining_rank = {
+        task_id: task_by_id[task_id].duration
+        for task_id in topological
+    }
+    for task_id in reversed(topological):
+        best_successor = max(
+            (remaining_rank[item] for item in successors[task_id]),
+            default=0,
+        )
+        remaining_rank[task_id] += best_successor
+
+    ready = [
+        (-remaining_rank[task.id], task.id)
+        for task in scenario.tasks
+        if not dependencies[task.id]
+    ]
+    heapq.heapify(ready)
+    resource_available: dict[str, float] = defaultdict(float)
+    global_available = 0.0
+    blocking_intervals: list[tuple[float, float]] = []
+    starts: dict[str, float] = {}
+    ends: dict[str, float] = {}
+
+    while ready:
+        _, task_id = heapq.heappop(ready)
+        task = task_by_id[task_id]
+        dependency_delay = (
+            task.dependency_delay_seconds
+            if task.dependency_delay_enabled and dependencies[task_id]
+            else 0
+        )
+        dependency_ready = max(
+            (
+                ends[predecessor] + dependency_delay
+                for predecessor in dependencies[task_id]
+            ),
+            default=0,
+        )
+        resources = {task.lane, *task.locked_resources}
+        resource_ready = max(
+            (resource_available[resource] for resource in resources),
+            default=0,
+        )
+        start = max(dependency_ready, resource_ready)
+        if not task.can_parallel:
+            start = max(start, global_available)
+        if task.manual_start is not None:
+            start = max(start, task.manual_start)
+        for blocked_start, blocked_end in blocking_intervals:
+            if start < blocked_end and start + task.duration > blocked_start:
+                start = blocked_end
+
+        end = start + task.duration
+        starts[task_id] = round(start * TIME_UNITS_PER_SECOND)
+        ends[task_id] = end
+        for resource in resources:
+            resource_available[resource] = end
+        if not task.can_parallel:
+            global_available = end
+            blocking_intervals.append((start, end))
+
+        for successor in successors[task_id]:
+            if all(predecessor in ends for predecessor in dependencies[successor]):
+                heapq.heappush(
+                    ready,
+                    (-remaining_rank[successor], successor),
+                )
+    return starts
+
+
 def solve_schedule(
     scenario: Scenario,
     time_limit_seconds: float = 60,
@@ -452,6 +569,7 @@ def solve_schedule(
     intervals_by_id: dict[str, cp_model.IntervalVar] = {}
     resource_intervals: dict[str, list[cp_model.IntervalVar]] = defaultdict(list)
     links: list[TemporalLink] = []
+    hint_starts = _greedy_schedule_hint(effective_scenario)
 
     for task in effective_scenario.tasks:
         duration = max(1, round(task.duration * TIME_UNITS_PER_SECOND))
@@ -460,6 +578,7 @@ def solve_schedule(
         interval = model.NewIntervalVar(start, duration, end, f"interval_{task.id}")
         starts[task.id] = start
         ends[task.id] = end
+        model.AddHint(start, hint_starts[task.id])
         if task.manual_start is not None:
             model.Add(
                 start
@@ -496,21 +615,26 @@ def solve_schedule(
     makespan = model.NewIntVar(0, horizon, "makespan")
     model.AddMaxEquality(makespan, list(ends.values()))
     if optimize:
-        model.Minimize(makespan * 1000 + sum(ends.values()))
+        model.Minimize(makespan)
 
     solver = cp_model.CpSolver()
     solver.parameters.max_time_in_seconds = min(60.0, time_limit_seconds)
-    solver.parameters.num_search_workers = 4
-    solver.parameters.relative_gap_limit = 0.001
+    solver.parameters.num_search_workers = _solver_worker_count()
+    solver.parameters.relative_gap_limit = _solver_relative_gap()
     solver.parameters.log_search_progress = False
     status = solver.Solve(model)
 
     if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+        timed_out = status == cp_model.UNKNOWN
         diagnostics = validation + [
             Diagnostic(
                 level="error",
-                title="未找到可行排程",
-                detail="请检查前置依赖和执行单元是否构成无法满足的约束。",
+                title="求解超时，尚未找到可行解"
+                if timed_out
+                else "约束组合无法生成可行排程",
+                detail="已使用当前 60 秒上限，未取得可行解；可降低重复次数后先分析单循环。"
+                if timed_out
+                else "请检查前置依赖和执行单元是否构成无法满足的约束。",
             )
         ]
         raise ScheduleValidationError(diagnostics)
@@ -621,9 +745,13 @@ def solve_schedule(
         metrics,
         scheduled,
     )
+    solved_to_tolerance = status == cp_model.OPTIMAL and (
+        not optimize
+        or abs(solver.BestObjectiveBound() - solver.ObjectiveValue()) < 1e-6
+    )
     return ScheduleResponse(
         scenario_id=scenario.id,
-        status="optimal" if status == cp_model.OPTIMAL else "feasible",
+        status="optimal" if solved_to_tolerance else "feasible",
         algorithm="OR-Tools CP-SAT",
         solve_time_ms=round((perf_counter() - started_at) * 1000),
         repeat_count=scenario.repeat_count,

@@ -106,6 +106,8 @@ npm --prefix frontend run build
 只有在未来模型扩展到数百个动作、加入非线性目标，或 CP-SAT 经常达到时间上限时，才建议评估“CP-SAT + 遗传算法热启动”的混合方案。
 
 为避免异常输入造成长时间等待，单次求解上限设为 60 秒；相同请求会命中缓存。
+CP-SAT 默认以 1% 相对间隙优先保证响应速度，可通过 `ACTO_SOLVER_RELATIVE_GAP`
+调整；并行工作线程数可通过 `ACTO_SOLVER_WORKERS` 设置。
 
 ## 目录
 
