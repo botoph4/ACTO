@@ -31,7 +31,7 @@ from .scheduler import ScheduleValidationError, solve_schedule
 
 app = FastAPI(
     title="ACTO API",
-    version="0.2.2",
+    version="0.2.3",
     description="Automation Cycle Time Optimizer · 机器人动作约束排程 API",
 )
 
