@@ -3,6 +3,8 @@ import {
   AlertTriangle,
   Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   Copy,
   Gauge,
@@ -32,6 +34,8 @@ type Props = {
   lanes: Lane[];
   scheduledTask: ScheduledTask | null;
   laneMetric: LaneMetric | null;
+  isCollapsed: boolean;
+  onToggleCollapsed: () => void;
   onChange: (patch: Partial<Task>) => void;
   onDelete: () => void;
   onDuplicate: () => void;
@@ -146,14 +150,42 @@ export default function Inspector({
   lanes,
   scheduledTask,
   laneMetric,
+  isCollapsed,
+  onToggleCollapsed,
   onChange,
   onDelete,
   onDuplicate,
   onManageUnits,
 }: Props) {
+  if (isCollapsed) {
+    return (
+      <aside className="side-panel inspector inspector-rail">
+        <button
+          type="button"
+          className="inspector-rail-toggle"
+          onClick={onToggleCollapsed}
+          title="展开动作属性"
+          aria-label="展开动作属性"
+        >
+          <ChevronLeft size={15} />
+          <span>动作属性</span>
+        </button>
+      </aside>
+    );
+  }
+
   if (!task) {
     return (
       <aside className="side-panel inspector">
+        <button
+          type="button"
+          className="inspector-collapse-button inspector-empty-collapse"
+          onClick={onToggleCollapsed}
+          title="收起右侧栏"
+          aria-label="收起右侧栏"
+        >
+          <ChevronRight size={15} />
+        </button>
         <div className="inspector-empty">
           <Play size={26} />
           <h3>选择一个动作</h3>
@@ -248,7 +280,18 @@ export default function Inspector({
           <span className="eyebrow">动作属性 · {taskCode}</span>
           <h2>编辑约束</h2>
         </div>
-        <span className="selected-color" style={{ background: task.color }} />
+        <div className="inspector-title-actions">
+          <span className="selected-color" style={{ background: task.color }} />
+          <button
+            type="button"
+            className="inspector-collapse-button"
+            onClick={onToggleCollapsed}
+            title="收起右侧栏"
+            aria-label="收起右侧栏"
+          >
+            <ChevronRight size={15} />
+          </button>
+        </div>
       </div>
 
       <div className="inspector-scroll">

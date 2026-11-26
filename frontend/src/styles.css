@@ -824,6 +824,10 @@ textarea:focus-visible {
   overflow: hidden;
 }
 
+.workspace.inspector-collapsed {
+  grid-template-columns: 286px minmax(530px, 1fr) 38px;
+}
+
 .sheet-bar {
   flex: 0 0 39px;
   height: 39px;
@@ -3305,9 +3309,78 @@ textarea:focus-visible {
 }
 
 .inspector {
+  position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.inspector-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.inspector-collapse-button {
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  border: 1px solid #e2e7ef;
+  border-radius: 7px;
+  color: #7e899b;
+  background: #fafbfc;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.inspector-collapse-button:hover {
+  color: #3159c8;
+  border-color: #ccd8ff;
+  background: #f3f6ff;
+}
+
+.inspector-empty-collapse {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+}
+
+.inspector-rail {
+  padding: 0;
+  background:
+    linear-gradient(180deg, rgba(49, 94, 251, 0.06), transparent 38%),
+    white;
+}
+
+.inspector-rail-toggle {
+  width: 100%;
+  height: 100%;
+  padding: 14px 0;
+  border: 0;
+  border-radius: inherit;
+  color: #69758a;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.inspector-rail-toggle:hover {
+  color: #3159c8;
+  background: #f6f8ff;
+}
+
+.inspector-rail-toggle span {
+  writing-mode: vertical-rl;
+  color: #69758a;
+  font-size: calc(8.5px * var(--font-scale, 1));
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .inspector-title-row {
@@ -5298,6 +5371,10 @@ textarea:focus-visible {
     grid-template-columns: 254px minmax(500px, 1fr) 300px;
     gap: 10px;
     padding: 10px;
+  }
+
+  .workspace.inspector-collapsed {
+    grid-template-columns: 254px minmax(500px, 1fr) 38px;
   }
 
   .brand-group {

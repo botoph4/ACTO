@@ -161,6 +161,7 @@ export default function App() {
   });
   const [isFontMenuOpen, setIsFontMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isInspectorCollapsed, setIsInspectorCollapsed] = useState(false);
   const [isParallelDetailsOpen, setIsParallelDetailsOpen] = useState(true);
   const [isWorksheetMenuOpen, setIsWorksheetMenuOpen] = useState(
     () => new URLSearchParams(window.location.search).get("sheetMenu") === "1",
@@ -1492,7 +1493,11 @@ export default function App() {
         </div>
       </nav>
 
-      <main className="workspace">
+      <main
+        className={`workspace ${
+          isInspectorCollapsed ? "inspector-collapsed" : ""
+        }`}
+      >
         <TaskSidebar
           scenario={scenario}
           selectedTaskId={selectedTaskId}
@@ -1718,6 +1723,10 @@ export default function App() {
           lanes={scenario.lanes}
           scheduledTask={selectedSchedule}
           laneMetric={selectedLaneMetric}
+          isCollapsed={isInspectorCollapsed}
+          onToggleCollapsed={() =>
+            setIsInspectorCollapsed((collapsed) => !collapsed)
+          }
           onChange={(patch) => {
             if (selectedTaskId) updateTask(selectedTaskId, patch);
           }}
