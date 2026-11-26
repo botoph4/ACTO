@@ -24,6 +24,72 @@ export function formatSeconds(value: number, digits = 1): string {
   return `${value.toFixed(digits)}s`;
 }
 
+export type CycleTimingMetrics = {
+  average: number;
+  first: number;
+  middleCount: number;
+  middleShortest: number;
+  last: number;
+};
+
+export function calculateCycleTiming(
+  schedule: ScheduleResult,
+  repeatCount: number,
+  loopStartTaskId: string | null,
+): CycleTimingMetrics {
+  const effectiveRepeat = Math.max(
+    1,
+    schedule.repeat_count ?? repeatCount,
+  );
+  const fallback = schedule.metrics.makespan / effectiveRepeat;
+  const cycleStarts =
+    loopStartTaskId == null
+      ? []
+      : schedule.scheduled_tasks
+          .filter(
+            (task) => (task.template_id ?? task.id) === loopStartTaskId,
+          )
+          .sort(
+            (left, right) =>
+              (left.iteration ?? 1) - (right.iteration ?? 1),
+          )
+          .map((task) => task.start);
+
+  if (cycleStarts.length < 2) {
+    return {
+      average: fallback,
+      first: fallback,
+      middleCount: Math.max(0, effectiveRepeat - 2),
+      middleShortest: fallback,
+      last: fallback,
+    };
+  }
+
+  const first = Math.max(0, cycleStarts[1] - cycleStarts[0]);
+  const middleIntervals = cycleStarts
+    .slice(2)
+    .map((start, index) => start - cycleStarts[index + 1])
+    .filter((value) => value > 0.0001);
+  const middleShortest = middleIntervals.length
+    ? Math.min(...middleIntervals)
+    : first;
+  const middleCount = Math.max(0, effectiveRepeat - 2);
+  const last = Math.max(
+    0,
+    schedule.metrics.makespan - cycleStarts.at(-1)!,
+  );
+  const average =
+    (first + middleCount * middleShortest + last) / effectiveRepeat;
+
+  return {
+    average,
+    first,
+    middleCount,
+    middleShortest,
+    last,
+  };
+}
+
 export type MotionProfile = {
   duration: number;
   peakVelocity: number;

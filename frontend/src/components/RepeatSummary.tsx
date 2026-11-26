@@ -6,6 +6,9 @@ type Props = {
   repeatCount: number;
   cycleTime: number | null;
   shortestCycleTime: number | null;
+  firstCycleTime: number | null;
+  middleCycleCount: number | null;
+  lastCycleTime: number | null;
   tasks: Task[];
   loopStartTaskId: string | null;
   loopReleaseTaskId: string | null;
@@ -19,6 +22,9 @@ export default function RepeatSummary({
   repeatCount,
   cycleTime,
   shortestCycleTime,
+  firstCycleTime,
+  middleCycleCount,
+  lastCycleTime,
   tasks,
   loopStartTaskId,
   loopReleaseTaskId,
@@ -27,9 +33,6 @@ export default function RepeatSummary({
 }: Props) {
   const change = (value: number) =>
     onRepeatCountChange(Math.round(clamp(value, 1, 999)));
-  const totalTime = cycleTime == null ? null : cycleTime * repeatCount;
-  const calculatedCt =
-    totalTime == null || repeatCount <= 0 ? null : totalTime / repeatCount;
   const codeById = new Map(
     tasks.map((task, index) => [task.id, taskCode(index)]),
   );
@@ -83,31 +86,44 @@ export default function RepeatSummary({
       </div>
 
       <div className="repeat-formula">
-        <span>
-          平均单次
+        <span title="首次 CT">
+          首次 CT
           <strong>
-            {cycleTime == null ? "—" : formatSeconds(cycleTime, 1)}
+            {firstCycleTime == null
+              ? "—"
+              : formatSeconds(firstCycleTime, 1)}
           </strong>
         </span>
-        <i>×</i>
-        <span>
-          重复
-          <strong>{repeatCount} 次</strong>
+        <i>+</i>
+        <span title="中间循环按最短 CT 折算">
+          <strong>{middleCycleCount ?? "—"} 次</strong>
+          × 最短 CT
+          <strong>
+            {shortestCycleTime == null
+              ? "—"
+              : formatSeconds(shortestCycleTime, 1)}
+          </strong>
         </span>
-        <i>=</i>
-        <span>
-          批次总时间
-          <strong>{totalTime == null ? "—" : formatSeconds(totalTime, 1)}</strong>
+        <i>+</i>
+        <span title="最后一次循环时间">
+          末次时间
+          <strong>
+            {lastCycleTime == null
+              ? "—"
+              : formatSeconds(lastCycleTime, 1)}
+          </strong>
         </span>
         <i>÷</i>
         <span>
-          重复
+          总次数
           <strong>{repeatCount} 次</strong>
         </span>
         <i>=</i>
         <span className="repeat-ct-result">
           平均 CT
-          <strong>{calculatedCt == null ? "—" : formatSeconds(calculatedCt, 1)}</strong>
+          <strong>
+            {cycleTime == null ? "—" : formatSeconds(cycleTime, 1)}
+          </strong>
           <small>/ 件</small>
         </span>
         <span className="repeat-ct-result repeat-shortest-result">
