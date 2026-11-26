@@ -1963,12 +1963,12 @@ textarea:focus-visible {
 }
 
 .repeat-summary {
-  flex: 0 0 90px;
+  flex: 0 0 118px;
   min-width: 0;
   padding: 6px 12px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: 28px 24px 24px;
+  grid-template-rows: 58px 24px 24px;
   align-items: center;
   column-gap: 16px;
   border: 1px solid #dfe6f1;
@@ -1976,8 +1976,6 @@ textarea:focus-visible {
   background:
     linear-gradient(100deg, rgba(49, 94, 251, 0.055), transparent 48%),
     white;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
 }
 
 .repeat-setting,
@@ -2086,11 +2084,14 @@ textarea:focus-visible {
 
 .repeat-results {
   min-width: 0;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
   justify-content: flex-end;
 }
 
 .ct-result-with-help {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 2px;
@@ -2109,10 +2110,51 @@ textarea:focus-visible {
   cursor: help;
 }
 
+.ct-help-button {
+  position: relative;
+  overflow: visible;
+}
+
 .ct-help-button:hover,
-.ct-help-button:focus-visible {
+.ct-help-button:focus-visible,
+.ct-help-button.is-open {
   color: #315efb;
   background: #edf2ff;
+}
+
+.ct-help-tooltip {
+  width: 286px;
+  padding: 9px 11px;
+  position: absolute;
+  right: -5px;
+  top: calc(100% + 7px);
+  z-index: 80;
+  border: 1px solid #dbe2ed;
+  border-radius: 8px;
+  color: #4f5c72;
+  background: white;
+  box-shadow: 0 12px 28px rgba(24, 36, 58, 0.16);
+  font-size: calc(8.5px * var(--font-scale, 1));
+  font-weight: 500;
+  line-height: 1.55;
+  text-align: left;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-3px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease,
+    visibility 120ms ease;
+  pointer-events: none;
+}
+
+.ct-help-button:hover .ct-help-tooltip,
+.ct-help-button:focus-visible .ct-help-tooltip,
+.ct-help-button.is-open .ct-help-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 .repeat-results .repeat-ct-result {

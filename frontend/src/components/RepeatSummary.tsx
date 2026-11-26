@@ -1,4 +1,5 @@
 import { CircleHelp, Minus, Plus, Repeat2, TimerReset } from "lucide-react";
+import { useState } from "react";
 import type { Task } from "../types";
 import { clamp, formatSeconds, taskCode } from "../utils";
 
@@ -36,6 +37,9 @@ export default function RepeatSummary({
   const codeById = new Map(
     tasks.map((task, index) => [task.id, taskCode(index)]),
   );
+  const [openHelp, setOpenHelp] = useState<
+    "average" | "shortest" | null
+  >(null);
   const usesSimpleAverage = repeatCount <= 2;
   const usesAdjacentInterval =
     ctStartTaskId != null && ctStartTaskId === ctEndTaskId;
@@ -99,11 +103,26 @@ export default function RepeatSummary({
           </span>
           <button
             type="button"
-            className="ct-help-button"
+            className={`ct-help-button ${
+              openHelp === "average" ? "is-open" : ""
+            }`}
             aria-label="查看平均 CT 计算说明"
-            title="平均 CT = 批次总时间 ÷ 总次数。用于比较不同方案的单件折算节拍。"
+            aria-describedby="average-ct-help"
+            aria-expanded={openHelp === "average"}
+            onClick={() =>
+              setOpenHelp((current) =>
+                current === "average" ? null : "average",
+              )
+            }
           >
             <CircleHelp size={14} />
+            <span
+              className="ct-help-tooltip"
+              id="average-ct-help"
+              role="tooltip"
+            >
+              平均 CT = 批次总时间 ÷ 总次数，用于比较不同方案的单件折算节拍。
+            </span>
           </button>
         </span>
         {!usesSimpleAverage && (
@@ -119,11 +138,26 @@ export default function RepeatSummary({
             </span>
             <button
               type="button"
-              className="ct-help-button"
+              className={`ct-help-button ${
+                openHelp === "shortest" ? "is-open" : ""
+              }`}
               aria-label="查看最短 CT 计算说明"
-              title="最短 CT = 在“最短 CT 统计范围”内逐次计算每次 CT 后取最小值。若起点、终点为同一动作，则取该动作相邻两次出现的时间间隔。"
+              aria-describedby="shortest-ct-help"
+              aria-expanded={openHelp === "shortest"}
+              onClick={() =>
+                setOpenHelp((current) =>
+                  current === "shortest" ? null : "shortest",
+                )
+              }
             >
               <CircleHelp size={14} />
+              <span
+                className="ct-help-tooltip"
+                id="shortest-ct-help"
+                role="tooltip"
+              >
+                最短 CT 按“最短 CT 统计范围”逐次计算并取最小值。起点和终点相同时，取相邻两次动作的时间间隔。
+              </span>
             </button>
           </span>
         )}
