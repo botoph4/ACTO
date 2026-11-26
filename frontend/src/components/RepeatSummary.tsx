@@ -6,10 +6,6 @@ type Props = {
   repeatCount: number;
   cycleTime: number | null;
   shortestCycleTime: number | null;
-  batchMakespan: number | null;
-  firstCycleTime: number | null;
-  middleCycleCount: number | null;
-  lastCycleTime: number | null;
   tasks: Task[];
   loopStartTaskId: string | null;
   loopReleaseTaskId: string | null;
@@ -23,10 +19,6 @@ export default function RepeatSummary({
   repeatCount,
   cycleTime,
   shortestCycleTime,
-  batchMakespan,
-  firstCycleTime,
-  middleCycleCount,
-  lastCycleTime,
   tasks,
   loopStartTaskId,
   loopReleaseTaskId,
@@ -88,60 +80,7 @@ export default function RepeatSummary({
         </div>
       </div>
 
-      <div className="repeat-formula">
-        {usesSimpleAverage ? (
-          <>
-            <span>
-              批次总时间
-              <strong>
-                {batchMakespan == null
-                  ? "—"
-                  : formatSeconds(batchMakespan, 1)}
-              </strong>
-            </span>
-            <i>÷</i>
-            <span>
-              总次数
-              <strong>{repeatCount} 次</strong>
-            </span>
-          </>
-        ) : (
-          <>
-            <span title="首次 CT">
-              首次 CT
-              <strong>
-                {firstCycleTime == null
-                  ? "—"
-                  : formatSeconds(firstCycleTime, 1)}
-              </strong>
-            </span>
-            <i>+</i>
-            <span title="中间循环按最短 CT 折算">
-              <strong>{middleCycleCount ?? "—"} 次</strong>
-              × 最短 CT
-              <strong>
-                {shortestCycleTime == null
-                  ? "—"
-                  : formatSeconds(shortestCycleTime, 1)}
-              </strong>
-            </span>
-            <i>+</i>
-            <span title="最后一次循环时间">
-              末次 CT
-              <strong>
-                {lastCycleTime == null
-                  ? "—"
-                  : formatSeconds(lastCycleTime, 1)}
-              </strong>
-            </span>
-            <i>÷</i>
-            <span>
-              总次数
-              <strong>{repeatCount} 次</strong>
-            </span>
-          </>
-        )}
-        <i>=</i>
+      <div className="repeat-results">
         <span className="repeat-ct-result">
           平均 CT
           <strong>
