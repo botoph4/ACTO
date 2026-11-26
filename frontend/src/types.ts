@@ -4,7 +4,6 @@ export type Lane = {
   short_name: string;
   color: string;
   description: string;
-  capacity?: number;
 };
 
 export type Task = {

@@ -152,9 +152,6 @@ def _resource_predecessors(
     scenario: Scenario,
     starts: dict[str, float],
 ) -> dict[str, list[str]]:
-    capacity_by_lane = {
-        lane.id: max(1, lane.capacity) for lane in scenario.lanes
-    }
     resource_tasks: dict[str, list[str]] = defaultdict(list)
     for task in scenario.tasks:
         for resource in set([task.lane, *task.locked_resources]):
@@ -166,8 +163,6 @@ def _resource_predecessors(
     for task in scenario.tasks:
         predecessors: list[str] = []
         for resource in set([task.lane, *task.locked_resources]):
-            if capacity_by_lane.get(resource, 1) > 1:
-                continue
             index = resource_tasks[resource].index(task.id)
             if index > 0:
                 predecessors.append(resource_tasks[resource][index - 1])
@@ -488,16 +483,9 @@ def solve_schedule(
             )
             links.append(TemporalLink(predecessor, task.id, kind))
 
-    capacity_by_lane = {
-        lane.id: max(1, lane.capacity) for lane in effective_scenario.lanes
-    }
-    for resource, intervals in resource_intervals.items():
+    for intervals in resource_intervals.values():
         if len(intervals) > 1:
-            capacity = capacity_by_lane.get(resource, 1)
-            if capacity > 1:
-                model.AddCumulative(intervals, [1] * len(intervals), capacity)
-            else:
-                model.AddNoOverlap(intervals)
+            model.AddNoOverlap(intervals)
     for task in effective_scenario.tasks:
         if task.can_parallel:
             continue
@@ -571,7 +559,6 @@ def solve_schedule(
 
     lane_metrics = []
     for lane in effective_scenario.lanes:
-        capacity = max(1, lane.capacity)
         lane_tasks = [
             task
             for task in effective_scenario.tasks
@@ -582,11 +569,7 @@ def solve_schedule(
             LaneMetric(
                 lane=lane.id,
                 busy_time=round(busy, 2),
-                utilization=round(
-                    busy / (makespan_value * capacity) * 100, 1
-                )
-                if makespan_value
-                else 0,
+                utilization=round(busy / makespan_value * 100, 1) if makespan_value else 0,
                 task_count=len(lane_tasks),
             )
         )
@@ -616,10 +599,7 @@ def solve_schedule(
         total_busy_time=round(total_busy, 2),
         parallel_efficiency=round(
             total_busy
-            / (
-                sum(max(1, lane.capacity) for lane in effective_scenario.lanes)
-                * makespan_value
-            )
+            / (len(effective_scenario.lanes) * makespan_value)
             * 100,
             1,
         )
