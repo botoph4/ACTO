@@ -2779,6 +2779,130 @@ textarea:focus-visible {
   min-height: 100%;
 }
 
+.gantt-export-header {
+  display: none;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 20px 27px 18px;
+  align-items: center;
+  gap: 18px;
+  color: #0b1733;
+  background: #f7f9fd;
+  border-top: 3px solid #315efb;
+  border-bottom: 1px solid #dfe5ef;
+}
+
+.gantt-exporting .gantt-export-header {
+  display: flex;
+}
+
+.gantt-export-brand {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.gantt-export-mark {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  color: white;
+  background: #0b1733;
+  box-shadow: 0 5px 12px rgba(11, 23, 51, 0.16);
+  font: 700 16px/1 "Manrope", sans-serif;
+}
+
+.gantt-export-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.gantt-export-copy small {
+  color: #6d79df;
+  font: 600 9px/1 "DM Mono", monospace;
+  letter-spacing: 0.6px;
+}
+
+.gantt-export-copy strong {
+  margin-top: 5px;
+  overflow: hidden;
+  color: #0b1733;
+  font-size: 23px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gantt-export-copy em {
+  margin-top: 5px;
+  color: #778397;
+  font-size: 9px;
+  font-style: normal;
+}
+
+.gantt-export-metrics {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gantt-export-metric {
+  box-sizing: border-box;
+  width: 180px;
+  height: 64px;
+  padding: 9px 11px 8px;
+  border: 1px solid #dfe5ef;
+  border-radius: 9px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.gantt-export-metric.average {
+  background: #f1f5ff;
+  border-left: 3px solid #315efb;
+}
+
+.gantt-export-metric.shortest {
+  background: #eff9f5;
+  border-left: 3px solid #1b9877;
+}
+
+.gantt-export-metric > small {
+  color: #778397;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.gantt-export-metric > span {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.gantt-export-metric strong {
+  flex: 0 0 auto;
+  color: #0b1733;
+  font: 700 25px/1 "Manrope", "Noto Sans SC", sans-serif;
+}
+
+.gantt-export-metric em {
+  flex: 0 0 auto;
+  color: #778397;
+  font-size: 9px;
+  font-style: normal;
+  white-space: nowrap;
+}
+
 .gantt-header {
   height: 48px;
   display: flex;

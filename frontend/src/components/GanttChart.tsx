@@ -27,6 +27,7 @@ import { clamp, formatSeconds } from "../utils";
 const ROW_HEIGHT = 64;
 const LABEL_WIDTH = 164;
 const HEADER_HEIGHT = 48;
+const EXPORT_HEADER_HEIGHT = 110;
 const MIN_BAR_WIDTH = 8;
 const BAR_VERTICAL_PADDING = 7;
 
@@ -112,11 +113,12 @@ function drawConnector(
   context: CanvasRenderingContext2D,
   connector: ConnectorPath,
   scale: number,
+  offsetY = 0,
 ) {
   const x1 = (LABEL_WIDTH + connector.x1) * scale;
-  const y1 = (HEADER_HEIGHT + connector.y1) * scale;
+  const y1 = (HEADER_HEIGHT + connector.y1) * scale + offsetY;
   const x2 = (LABEL_WIDTH + connector.x2) * scale;
-  const y2 = (HEADER_HEIGHT + connector.y2) * scale;
+  const y2 = (HEADER_HEIGHT + connector.y2) * scale + offsetY;
   const bend = connector.bend * scale;
 
   context.beginPath();
@@ -152,6 +154,8 @@ type Props = {
   hasErrors: boolean;
   errorCount: number;
   repeatCount: number;
+  cycleTime: number | null;
+  shortestCycleTime: number | null;
   fontScale: number;
   onSelect: (taskId: string) => void;
   onExportCsv: () => void;
@@ -173,6 +177,8 @@ export default function GanttChart({
   hasErrors,
   errorCount,
   repeatCount,
+  cycleTime,
+  shortestCycleTime,
   fontScale,
   onSelect,
   onExportCsv,
@@ -603,8 +609,11 @@ export default function GanttChart({
         context.save();
         context.lineCap = "round";
         const outputScale = canvas.width / width;
+        const headerOffset = EXPORT_HEADER_HEIGHT * outputScale;
         for (const connector of [...dependencyPaths, ...loopPaths]) {
-          if (connector) drawConnector(context, connector, outputScale);
+          if (connector) {
+            drawConnector(context, connector, outputScale, headerOffset);
+          }
         }
         context.restore();
       }
@@ -745,6 +754,41 @@ export default function GanttChart({
           ref={exportRef}
           style={{ width: LABEL_WIDTH + timelineWidth + 2 }}
         >
+          <div
+            className="gantt-export-header"
+            style={{ height: EXPORT_HEADER_HEIGHT }}
+          >
+            <div className="gantt-export-brand">
+              <span className="gantt-export-mark">A</span>
+              <span className="gantt-export-copy">
+                <small>ACTO · CYCLE STUDIO</small>
+                <strong>{scenario.name || "未命名场景"}</strong>
+                <em>动作甘特图 · 重复 {repeatCount} 次</em>
+              </span>
+            </div>
+            <div className="gantt-export-metrics">
+              <span className="gantt-export-metric average">
+                <small>平均 CT</small>
+                <span>
+                  <strong>
+                    {cycleTime == null ? "—" : cycleTime.toFixed(1)}
+                  </strong>
+                  <em>s / 件</em>
+                </span>
+              </span>
+              <span className="gantt-export-metric shortest">
+                <small>最短 CT</small>
+                <span>
+                  <strong>
+                    {shortestCycleTime == null
+                      ? "—"
+                      : shortestCycleTime.toFixed(1)}
+                  </strong>
+                  <em>s / 件</em>
+                </span>
+              </span>
+            </div>
+          </div>
           <div className="gantt-header">
             <div className="gantt-corner">执行单元</div>
             <div

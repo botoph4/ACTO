@@ -1726,6 +1726,8 @@ export default function App() {
             hasErrors={hasErrors}
             errorCount={errorDiagnostics.length}
             repeatCount={repeatCount}
+            cycleTime={cycleTime}
+            shortestCycleTime={shortestCycleTime}
             fontScale={uiScale}
             onSelect={setSelectedTaskId}
             onExportCsv={exportCsv}
