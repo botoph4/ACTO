@@ -1519,7 +1519,6 @@ export default function App() {
             baselineMakespan={baselineMakespan}
             hasErrors={hasErrors}
             repeatCount={repeatCount}
-            shortestCycleTime={shortestCycleTime}
           />
 
           <RepeatSummary
@@ -1651,7 +1650,9 @@ export default function App() {
                       <Sparkles size={13} />
                       并行窗口
                     </span>
-                    <small>同一时间窗口内、不同执行单元同时执行的动作</small>
+                    <small>
+                      基于首循环模板，不同执行单元同时执行的动作
+                    </small>
                     <strong>{parallelWindows.length} 组</strong>
                   </header>
                   <div className="parallel-window-list">

@@ -88,6 +88,12 @@ export function computeParallelWindows(
   schedule: ScheduleResult,
   scenario: Scenario,
 ): ParallelWindow[] {
+  const scheduledTasks =
+    (schedule.repeat_count ?? 1) > 1
+      ? schedule.scheduled_tasks.filter(
+          (task) => (task.iteration ?? 1) === 1,
+        )
+      : schedule.scheduled_tasks;
   const tasksById = new Map(
     scenario.tasks.map((task, index) => [
       task.id,
@@ -97,7 +103,7 @@ export function computeParallelWindows(
   const lanesById = new Map(scenario.lanes.map((lane) => [lane.id, lane]));
   const points = Array.from(
     new Set(
-      schedule.scheduled_tasks.flatMap((task) => [task.start, task.end]),
+      scheduledTasks.flatMap((task) => [task.start, task.end]),
     ),
   ).sort((left, right) => left - right);
   const windows: ParallelWindow[] = [];
@@ -106,7 +112,7 @@ export function computeParallelWindows(
     const start = points[index];
     const end = points[index + 1];
     if (end - start < 0.01) continue;
-    const active = schedule.scheduled_tasks.filter(
+    const active = scheduledTasks.filter(
       (task) => task.start < end - 0.001 && task.end > start + 0.001,
     );
     if (active.length < 2) continue;

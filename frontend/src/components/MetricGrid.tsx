@@ -13,7 +13,6 @@ type Props = {
   baselineMakespan: number | null;
   hasErrors: boolean;
   repeatCount: number;
-  shortestCycleTime: number | null;
 };
 
 export default function MetricGrid({
@@ -22,14 +21,9 @@ export default function MetricGrid({
   baselineMakespan,
   hasErrors,
   repeatCount,
-  shortestCycleTime,
 }: Props) {
   const metrics = schedule?.metrics;
   const effectiveRepeat = schedule?.repeat_count ?? repeatCount;
-  const effectiveCt =
-    metrics && effectiveRepeat > 0
-      ? metrics.makespan / effectiveRepeat
-      : null;
   const bottleneck = scenario.lanes.find(
     (lane) => lane.id === metrics?.bottleneck_lane,
   );
@@ -44,31 +38,17 @@ export default function MetricGrid({
           <strong>
             {metrics ? formatSeconds(metrics.makespan) : "—"}
           </strong>
-          {!hasErrors && metrics && effectiveCt != null ? (
-            <span className="metric-foot metric-ct-foot">
-              <span>
-                平均 CT <b>{formatSeconds(effectiveCt)}</b>
-              </span>
-              <span className="metric-shortest-ct">
-                最短 CT{" "}
-                <b>
-                  {shortestCycleTime == null
-                    ? "—"
-                    : formatSeconds(shortestCycleTime)}
-                </b>
-              </span>
-            </span>
-          ) : (
-            <span
-              className={`metric-foot ${hasErrors ? "metric-foot-error" : ""}`}
-            >
-              {hasErrors
-                ? schedule
-                  ? "上次可行解 · 当前约束异常"
-                  : "无有效排程结果 · 请修复约束"
+          <span
+            className={`metric-foot ${hasErrors ? "metric-foot-error" : ""}`}
+          >
+            {hasErrors
+              ? schedule
+                ? "上次可行解 · 当前约束异常"
+                : "无有效排程结果 · 请修复约束"
+              : metrics
+                ? `共 ${effectiveRepeat} 次循环`
                 : "等待排程结果"}
-            </span>
-          )}
+          </span>
         </div>
         <span className="metric-sequence">01</span>
       </article>
@@ -86,7 +66,10 @@ export default function MetricGrid({
         </div>
       </article>
 
-      <article className="metric-card">
+      <article
+        className="metric-card"
+        title="瓶颈单元：执行单元占用时间除以批次总时间后，利用率最高的执行单元。"
+      >
         <div className="metric-icon metric-icon-orange">
           <CircleGauge size={18} />
         </div>
@@ -101,7 +84,10 @@ export default function MetricGrid({
         </div>
       </article>
 
-      <article className="metric-card">
+      <article
+        className="metric-card"
+        title="关键路径：由实际排程中决定批次完成时间的动作、依赖等待和同单元串行关系组成的零余量链。"
+      >
         <div className="metric-icon metric-icon-green">
           <GitBranch size={18} />
         </div>
