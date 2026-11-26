@@ -1653,15 +1653,15 @@ textarea:focus-visible {
 
 .metric-card {
   min-width: 0;
-  height: 116px;
-  padding: 14px;
+  height: 92px;
+  padding: 9px 12px;
   background: white;
   border: 1px solid var(--line);
   border-radius: 14px;
   box-shadow: 0 7px 20px rgba(32, 45, 72, 0.035);
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 9px;
   position: relative;
   overflow: hidden;
 }
@@ -1710,22 +1710,22 @@ textarea:focus-visible {
 }
 
 .metric-detail-card {
-  padding: 8px 10px;
-  gap: 6px;
+  padding: 6px 10px;
+  gap: 5px;
 }
 
 .metric-detail-card .metric-icon {
-  flex-basis: 24px;
-  width: 24px;
-  height: 24px;
+  flex-basis: 22px;
+  width: 22px;
+  height: 22px;
   border-radius: 7px;
 }
 
 .metric-lane-list {
-  margin-top: 4px;
+  margin-top: 3px;
   display: grid;
   gap: 0;
-  max-height: 74px;
+  max-height: 45px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scroll-snap-type: y mandatory;
@@ -5386,7 +5386,7 @@ textarea:focus-visible {
   }
 
   .metric-card {
-    padding: 12px 10px;
+    padding: 8px 9px;
   }
 
   .metric-icon {
