@@ -142,6 +142,11 @@ def test_locked_resource_blocks_tasks_assigned_to_that_lane():
 
     assert left.end <= right.start or right.end <= left.start
     assert result.metrics.makespan == 7
+    lane_metrics = {
+        metric.lane: metric for metric in result.metrics.lane_metrics
+    }
+    assert lane_metrics["right"].busy_time == 5
+    assert lane_metrics["left"].busy_time == 2
 
 
 def test_loop_start_waits_for_configured_release_task():

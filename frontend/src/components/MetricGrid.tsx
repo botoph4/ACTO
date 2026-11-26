@@ -70,7 +70,7 @@ export default function MetricGrid({
 
       <article
         className="metric-card metric-detail-card"
-        title="利用率：执行单元累计占用时间除以批次总时间。橙色高亮为瓶颈单元。"
+        title="利用率：执行单元自身承担的动作时长除以批次总时间，不计其他执行单元的附加占用。橙色高亮为瓶颈单元。"
       >
         <div className="metric-icon metric-icon-orange">
           <CircleGauge size={17} />
@@ -109,7 +109,7 @@ export default function MetricGrid({
 
       <article
         className="metric-card metric-detail-card"
-        title="等待时间：批次总时间减去该执行单元的累计占用时间，包含未占用、依赖等待和资源等待。"
+        title="等待时间：批次总时间减去该执行单元自身承担的动作时长，包含未占用、依赖等待和资源等待。"
       >
         <div className="metric-icon metric-icon-green">
           <Clock3 size={17} />

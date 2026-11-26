@@ -702,7 +702,7 @@ def solve_schedule(
         lane_tasks = [
             task
             for task in effective_scenario.tasks
-            if task.lane == lane.id or lane.id in task.locked_resources
+            if task.lane == lane.id
         ]
         busy = sum(task.duration for task in lane_tasks)
         lane_metrics.append(
