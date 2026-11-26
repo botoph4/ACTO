@@ -37,6 +37,8 @@ export default function RepeatSummary({
     tasks.map((task, index) => [task.id, taskCode(index)]),
   );
   const usesSimpleAverage = repeatCount <= 2;
+  const usesAdjacentInterval =
+    ctStartTaskId != null && ctStartTaskId === ctEndTaskId;
 
   return (
     <section className="repeat-summary" aria-label="重复批次折算">
@@ -200,7 +202,11 @@ export default function RepeatSummary({
             ))}
           </select>
         </label>
-        <small>按每次实际起止动作计算平均 CT 和最短 CT</small>
+        <small>
+          {usesAdjacentInterval
+            ? "起止动作相同：按相邻两次动作的时间间隔计算"
+            : "按每次实际起止动作计算平均 CT 和最短 CT"}
+        </small>
       </div>
 
     </section>

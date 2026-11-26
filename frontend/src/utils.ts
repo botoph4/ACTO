@@ -25,8 +25,8 @@ export function formatSeconds(value: number, digits = 1): string {
 }
 
 export type CycleTimingMetrics = {
-  average: number;
-  shortest: number;
+  average: number | null;
+  shortest: number | null;
   sampleCount: number;
 };
 
@@ -62,23 +62,39 @@ export function calculateCycleTiming(
     }
   }
 
-  const cycleDurations = Array.from(
-    { length: effectiveRepeat },
-    (_, index) => {
-      const iteration = index + 1;
-      const start = startsByIteration.get(iteration);
-      const end = endsByIteration.get(iteration);
-      return start == null || end == null
-        ? null
-        : end - start;
-    },
-  ).filter((duration): duration is number => duration != null && duration >= 0);
+  const cycleDurations =
+    startTaskId === endTaskId
+      ? Array.from(
+          { length: Math.max(0, effectiveRepeat - 1) },
+          (_, index) => {
+            const currentStart = startsByIteration.get(index + 1);
+            const nextStart = startsByIteration.get(index + 2);
+            return currentStart == null || nextStart == null
+              ? null
+              : nextStart - currentStart;
+          },
+        ).filter(
+          (duration): duration is number =>
+            duration != null && duration >= 0,
+        )
+      : Array.from(
+          { length: effectiveRepeat },
+          (_, index) => {
+            const iteration = index + 1;
+            const start = startsByIteration.get(iteration);
+            const end = endsByIteration.get(iteration);
+            return start == null || end == null ? null : end - start;
+          },
+        ).filter(
+          (duration): duration is number =>
+            duration != null && duration >= 0,
+        );
 
   if (!cycleDurations.length) {
     return {
-      average: fallback,
-      shortest: fallback,
-      sampleCount: effectiveRepeat,
+      average: null,
+      shortest: null,
+      sampleCount: 0,
     };
   }
   const average =
