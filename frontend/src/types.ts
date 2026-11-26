@@ -37,6 +37,7 @@ export type Scenario = {
   id: string;
   name: string;
   description: string;
+  tags?: string[];
   repeat_count?: number;
   loop?: LoopConfig | null;
   lanes: Lane[];

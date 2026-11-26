@@ -1,6 +1,7 @@
 import {
   Activity,
   Boxes,
+  Check,
   ChevronRight,
   CircleDot,
   GitMerge,
@@ -9,7 +10,9 @@ import {
   Search,
   SlidersHorizontal,
   Trash2,
+  X,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import type { Lane, Scenario, Task } from "../types";
 
 type Props = {
@@ -20,6 +23,9 @@ type Props = {
   taskCodes: Map<string, string>;
   hasErrors: boolean;
   mode: "tasks" | "units";
+  onUpdateScenarioMeta: (
+    patch: Partial<Pick<Scenario, "name" | "description" | "tags">>,
+  ) => void;
   onSearch: (value: string) => void;
   onSelect: (taskId: string) => void;
   onAdd: () => void;
@@ -166,6 +172,7 @@ export default function TaskSidebar({
   taskCodes,
   hasErrors,
   mode,
+  onUpdateScenarioMeta,
   onSearch,
   onSelect,
   onAdd,
@@ -176,6 +183,10 @@ export default function TaskSidebar({
   onSetLoopStart,
   onSetLoopEnd,
 }: Props) {
+  const [isAddingTag, setIsAddingTag] = useState(false);
+  const [newTag, setNewTag] = useState("");
+  const addTagInputRef = useRef<HTMLInputElement>(null);
+  const tags = scenario.tags ?? [];
   const laneMap = new Map(scenario.lanes.map((lane) => [lane.id, lane]));
   const query = search.trim().toLowerCase();
   const filtered = query
@@ -202,6 +213,26 @@ export default function TaskSidebar({
     0,
   );
 
+  useEffect(() => {
+    if (isAddingTag) addTagInputRef.current?.focus();
+  }, [isAddingTag]);
+
+  const updateTags = (nextTags: string[]) => {
+    onUpdateScenarioMeta({ tags: nextTags });
+  };
+
+  const commitTag = () => {
+    const value = newTag.trim();
+    if (!value) {
+      setIsAddingTag(false);
+      setNewTag("");
+      return;
+    }
+    if (!tags.includes(value)) updateTags([...tags, value]);
+    setNewTag("");
+    setIsAddingTag(false);
+  };
+
   return (
     <aside className="side-panel task-sidebar">
       <div className="scene-summary">
@@ -209,12 +240,105 @@ export default function TaskSidebar({
           <CircleDot size={13} />
           当前场景
         </div>
-        <h2>{scenario.name}</h2>
-        <p>{scenario.description}</p>
+        <input
+          className="scene-name-input"
+          aria-label="场景名称"
+          value={scenario.name}
+          placeholder="未命名场景"
+          onChange={(event) =>
+            onUpdateScenarioMeta({ name: event.target.value })
+          }
+          onBlur={() => {
+            if (!scenario.name.trim()) {
+              onUpdateScenarioMeta({ name: "未命名场景" });
+            } else if (scenario.name !== scenario.name.trim()) {
+              onUpdateScenarioMeta({ name: scenario.name.trim() });
+            }
+          }}
+        />
+        <textarea
+          className="scene-description-input"
+          aria-label="场景说明"
+          rows={2}
+          value={scenario.description}
+          placeholder="添加场景说明"
+          onChange={(event) =>
+            onUpdateScenarioMeta({ description: event.target.value })
+          }
+          onBlur={() =>
+            onUpdateScenarioMeta({ description: scenario.description.trim() })
+          }
+        />
         <div className="scene-tags">
-          <span>M1</span>
-          <span>双臂协同</span>
-          <span>中转平台</span>
+          {tags.map((tag, index) => (
+            <span className="scene-tag" key={index}>
+              <input
+                aria-label={`场景标签 ${index + 1}`}
+                size={Math.max(2, Array.from(tag).length)}
+                value={tag}
+                onChange={(event) => {
+                  const nextTags = [...tags];
+                  nextTags[index] = event.target.value;
+                  updateTags(nextTags);
+                }}
+                onBlur={() => {
+                  const value = tag.trim();
+                  if (!value) {
+                    updateTags(tags.filter((_, tagIndex) => tagIndex !== index));
+                  } else if (value !== tag) {
+                    const nextTags = [...tags];
+                    nextTags[index] = value;
+                    updateTags(nextTags);
+                  }
+                }}
+              />
+              <button
+                type="button"
+                aria-label={`删除标签 ${tag || index + 1}`}
+                title="删除标签"
+                onClick={() =>
+                  updateTags(tags.filter((_, tagIndex) => tagIndex !== index))
+                }
+              >
+                <X size={10} />
+              </button>
+            </span>
+          ))}
+          {isAddingTag ? (
+            <form
+              className="scene-tag-editor"
+              onSubmit={(event) => {
+                event.preventDefault();
+                commitTag();
+              }}
+            >
+              <input
+                ref={addTagInputRef}
+                aria-label="新标签"
+                value={newTag}
+                placeholder="输入标签"
+                onChange={(event) => setNewTag(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    setIsAddingTag(false);
+                    setNewTag("");
+                  }
+                }}
+              />
+              <button type="submit" aria-label="确认添加标签" title="确认">
+                <Check size={11} />
+              </button>
+            </form>
+          ) : (
+            <button
+              type="button"
+              className="scene-tag-add"
+              onClick={() => setIsAddingTag(true)}
+            >
+              <Plus size={11} />
+              标签
+            </button>
+          )}
         </div>
       </div>
 

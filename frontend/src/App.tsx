@@ -443,6 +443,24 @@ export default function App() {
     [activeWorksheetId],
   );
 
+  const updateScenarioMeta = useCallback(
+    (patch: Partial<Pick<Scenario, "name" | "description" | "tags">>) => {
+      if (!activeWorksheetId) return;
+      setWorksheets((current) =>
+        current.map((worksheet) => {
+          if (worksheet.id !== activeWorksheetId) return worksheet;
+          return {
+            ...worksheet,
+            name: patch.name ?? worksheet.name,
+            scenario: { ...worksheet.scenario, ...patch },
+            updatedAt: Date.now(),
+          };
+        }),
+      );
+    },
+    [activeWorksheetId],
+  );
+
   const runSchedule = useCallback(
     async (
       target: Scenario,
@@ -1510,6 +1528,7 @@ export default function App() {
           onSelect={setSelectedTaskId}
           onAdd={addTask}
           mode={sidebarMode}
+          onUpdateScenarioMeta={updateScenarioMeta}
           onModeChange={setSidebarMode}
           onAddLane={addExecutionUnit}
           onUpdateLane={updateLane}

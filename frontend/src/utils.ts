@@ -173,6 +173,7 @@ export function computeParallelWindows(
 export function mergeLegacyDependencies(scenario: Scenario): Scenario {
   return {
     ...scenario,
+    tags: Array.isArray(scenario.tags) ? scenario.tags : [],
     tasks: scenario.tasks.map((task) => ({
       ...task,
       dependencies: Array.from(

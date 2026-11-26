@@ -95,6 +95,7 @@ class Scenario(BaseModel):
     id: str = "acto-demo"
     name: str = "M1 双臂搓线插线 + 中转平台"
     description: str = ""
+    tags: list[str] = Field(default_factory=list, max_length=50)
     repeat_count: int = Field(default=1, ge=1, le=999)
     loop: LoopConfig | None = None
     lanes: list[Lane]

@@ -6,9 +6,11 @@ from __future__ import annotations
 import os
 import tempfile
 from datetime import datetime, timedelta, timezone
+from io import BytesIO
 from pathlib import Path
 
 from pypdf import PdfReader, PdfWriter
+from reportlab.pdfgen import canvas as pdf_canvas
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4
@@ -18,6 +20,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     Paragraph,
+    Image,
     SimpleDocTemplate,
     Spacer,
     Table,
@@ -26,7 +29,14 @@ from reportlab.platypus import (
 
 ROOT = Path(__file__).resolve().parents[1]
 MANUAL_PATH = ROOT / "docs" / "ACTO-Cycle-Studio-使用说明.pdf"
+MANUAL_SOURCE_PATH = Path(
+    os.environ.get("ACTO_MANUAL_SOURCE", str(MANUAL_PATH))
+).expanduser()
+MANUAL_OUTPUT_PATH = Path(
+    os.environ.get("ACTO_MANUAL_OUTPUT", str(MANUAL_PATH))
+).expanduser()
 TARGET_PAGE_INDEX = 9
+WORKSHEET_PAGE_INDEX = 5
 VERSION = "0.2.4"
 
 NAVY = colors.HexColor("#0B1733")
@@ -266,7 +276,29 @@ def make_metrics_table(styles: dict[str, ParagraphStyle], width: float) -> Table
     return table
 
 
-def build_replacement_page(output: Path) -> None:
+def single_page_document(output: Path, story: list, page_number: int) -> None:
+    doc = SimpleDocTemplate(
+        str(output),
+        pagesize=A4,
+        rightMargin=64,
+        leftMargin=64,
+        topMargin=59,
+        bottomMargin=48,
+        title="ACTO Cycle Studio 使用说明",
+        author="Agile Robot ISA Control",
+        subject=f"ACTO Cycle Studio Version {VERSION} 使用说明",
+    )
+    doc.build(
+        story,
+        onFirstPage=lambda canvas, document: draw_page_frame(
+            canvas, document, page_number
+        ),
+    )
+    if len(PdfReader(str(output)).pages) != 1:
+        raise RuntimeError(f"第 {page_number} 页内容超出一页，请调整排版间距")
+
+
+def build_metrics_page(output: Path) -> None:
     regular, bold = register_fonts()
     styles = make_styles(regular, bold)
     content_width = A4[0] - 128
@@ -346,36 +378,134 @@ def build_replacement_page(output: Path) -> None:
         ),
     ]
 
-    doc = SimpleDocTemplate(
-        str(output),
-        pagesize=A4,
-        rightMargin=64,
-        leftMargin=64,
-        topMargin=59,
-        bottomMargin=48,
-        title="ACTO Cycle Studio 使用说明",
-        author="Agile Robot ISA Control",
-        subject=f"ACTO Cycle Studio Version {VERSION} 使用说明",
+    single_page_document(output, story, TARGET_PAGE_INDEX + 1)
+
+
+def build_worksheet_page(output: Path) -> None:
+    regular, bold = register_fonts()
+    styles = make_styles(regular, bold)
+    content_width = A4[0] - 128
+    screenshot_path = ROOT / "docs" / "acto-worksheet-switcher.png"
+    screenshot = Image(
+        str(screenshot_path),
+        width=content_width,
+        height=content_width / (2520 / 1287),
     )
-    doc.build(
-        story,
-        onFirstPage=lambda canvas, document: draw_page_frame(
-            canvas, document, TARGET_PAGE_INDEX + 1
+    compact_bullet = ParagraphStyle(
+        "CompactBullet",
+        parent=styles["bullet"],
+        fontSize=8.7,
+        leading=14,
+        spaceAfter=4,
+    )
+    story = [
+        Paragraph("SECTION 04", styles["section"]),
+        Paragraph("工作表管理", styles["title"]),
+        Paragraph(
+            "工作表用于隔离不同机器人、工位或方案的场景数据。每名用户可以在自己的"
+            "工作表中自由切换，并直接维护当前场景的名称、说明和标签。",
+            styles["lead"],
         ),
+        screenshot,
+        Paragraph(
+            "图 4-1 工作表切换菜单与当前场景信息区。",
+            styles["caption"],
+        ),
+        Spacer(1, 10),
+        Paragraph("场景信息编辑", styles["h2"]),
+        Paragraph(
+            "当前场景标题和说明可直接在左侧信息区点击编辑，修改后自动保存；"
+            "标题会同步到对应的工作表名称。",
+            compact_bullet,
+            bulletText="•",
+        ),
+        Paragraph(
+            "标签支持直接改名，点击标签右侧的 X 可删除，点击“+ 标签”可新增。"
+            "标签随场景 JSON 一起保存和导入导出。",
+            compact_bullet,
+            bulletText="•",
+        ),
+        Paragraph(
+            "工作表栏支持新建、切换、重命名、复制和删除。双击工作表标签也可快速"
+            "重命名。",
+            compact_bullet,
+            bulletText="•",
+        ),
+        Spacer(1, 4),
+        callout(
+            "<b>保存机制</b> 场景信息和工作表会自动保存到当前账号对应的浏览器"
+            "本地存储。更换电脑或清理浏览器数据前，请先使用“导出全部工作表”"
+            "保留 JSON 备份。",
+            content_width,
+            styles["callout"],
+        ),
+    ]
+    single_page_document(output, story, WORKSHEET_PAGE_INDEX + 1)
+
+
+def merge_screenshot(
+    page,
+    image_path: Path,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+) -> None:
+    packet = BytesIO()
+    overlay = pdf_canvas.Canvas(packet, pagesize=A4)
+    overlay.setFillColor(colors.white)
+    overlay.rect(x - 1, y - 1, width + 2, height + 2, fill=1, stroke=0)
+    overlay.drawImage(
+        str(image_path),
+        x,
+        y,
+        width=width,
+        height=height,
+        preserveAspectRatio=False,
+        mask="auto",
     )
-    if len(PdfReader(str(output)).pages) != 1:
-        raise RuntimeError("更新页内容超出一页，请调整排版间距")
+    overlay.showPage()
+    overlay.save()
+    packet.seek(0)
+    page.merge_page(PdfReader(packet).pages[0], over=True)
 
 
 def replace_manual_page(replacement: Path, output: Path) -> None:
-    reader = PdfReader(str(MANUAL_PATH))
+    reader = PdfReader(str(MANUAL_SOURCE_PATH))
     if len(reader.pages) != 14:
         raise RuntimeError(f"说明书页数异常：预期 14 页，实际 {len(reader.pages)} 页")
 
-    new_page = PdfReader(str(replacement)).pages[0]
+    replacements = PdfReader(str(replacement))
+    replacement_pages = {
+        WORKSHEET_PAGE_INDEX: replacements.pages[0],
+        TARGET_PAGE_INDEX: replacements.pages[1],
+    }
+    screenshot_updates = {
+        4: ("acto-preview.png", 51.02362, 423.5452, 493.2283, 251.817),
+        6: (
+            "acto-loop-boundaries-in-list.png",
+            51.02362,
+            86.18225,
+            493.2283,
+            283.98,
+        ),
+        8: ("acto-repeat-summary.png", 51.02362, 443.5452, 493.2283, 251.817),
+        10: ("acto-gantt-drag.png", 51.02362, 443.5452, 493.2283, 251.817),
+        11: ("acto-import-dialog.png", 51.02362, 443.5452, 493.2283, 251.817),
+    }
     writer = PdfWriter()
     for index, page in enumerate(reader.pages):
-        writer.add_page(new_page if index == TARGET_PAGE_INDEX else page)
+        if index in screenshot_updates:
+            image_name, x, y, width, height = screenshot_updates[index]
+            merge_screenshot(
+                page,
+                ROOT / "docs" / image_name,
+                x,
+                y,
+                width,
+                height,
+            )
+        writer.add_page(replacement_pages.get(index, page))
 
     timezone_china = timezone(timedelta(hours=8))
     modified = datetime.now(timezone_china)
@@ -396,18 +526,28 @@ def replace_manual_page(replacement: Path, output: Path) -> None:
 
 
 def main() -> None:
-    if not MANUAL_PATH.is_file():
-        raise FileNotFoundError(f"说明书不存在：{MANUAL_PATH}")
+    if not MANUAL_SOURCE_PATH.is_file():
+        raise FileNotFoundError(f"说明书底稿不存在：{MANUAL_SOURCE_PATH}")
+    if not MANUAL_OUTPUT_PATH.parent.is_dir():
+        raise FileNotFoundError(f"说明书输出目录不存在：{MANUAL_OUTPUT_PATH.parent}")
 
     with tempfile.TemporaryDirectory(prefix="acto-manual-") as temp_dir:
         temp_path = Path(temp_dir)
-        replacement = temp_path / "metrics-page.pdf"
+        worksheet_page = temp_path / "worksheet-page.pdf"
+        metrics_page = temp_path / "metrics-page.pdf"
+        replacement = temp_path / "replacement-pages.pdf"
         merged = temp_path / "manual-updated.pdf"
-        build_replacement_page(replacement)
+        build_worksheet_page(worksheet_page)
+        build_metrics_page(metrics_page)
+        replacement_writer = PdfWriter()
+        replacement_writer.add_page(PdfReader(str(worksheet_page)).pages[0])
+        replacement_writer.add_page(PdfReader(str(metrics_page)).pages[0])
+        with replacement.open("wb") as stream:
+            replacement_writer.write(stream)
         replace_manual_page(replacement, merged)
-        os.replace(merged, MANUAL_PATH)
+        os.replace(merged, MANUAL_OUTPUT_PATH)
 
-    updated = PdfReader(str(MANUAL_PATH))
+    updated = PdfReader(str(MANUAL_OUTPUT_PATH))
     if len(updated.pages) != 14:
         raise RuntimeError("更新后的说明书页数不是 14 页")
     text = updated.pages[TARGET_PAGE_INDEX].extract_text() or ""
@@ -415,7 +555,7 @@ def main() -> None:
     missing = [phrase for phrase in required if phrase not in text]
     if missing:
         raise RuntimeError(f"更新页缺少必要内容：{', '.join(missing)}")
-    print(f"已更新说明书：{MANUAL_PATH}")
+    print(f"已更新说明书：{MANUAL_OUTPUT_PATH}")
 
 
 if __name__ == "__main__":

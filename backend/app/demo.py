@@ -55,6 +55,7 @@ DEMO_SCENARIO = Scenario(
     id="m1-transfer-baseline-v1",
     name="M1 双臂搓线插线 + 中转平台",
     description="基于中转位节拍分析与胸前工作平台仿真方案构建。",
+    tags=["M1", "双臂协同", "中转平台"],
     lanes=LANES,
     tasks=[
         _task("torso_pose", "躯干定位至目标层高", "torso", 0.8, B, "准备"),
