@@ -1967,7 +1967,7 @@ textarea:focus-visible {
   min-width: 0;
   padding: 6px 12px;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   grid-template-rows: 64px 32px 32px;
   align-items: center;
   column-gap: 16px;
@@ -1992,7 +1992,9 @@ textarea:focus-visible {
 
 .repeat-results {
   grid-column: 2;
-  grid-row: 1;
+  grid-row: 1 / -1;
+  align-self: center;
+  justify-self: end;
 }
 
 .repeat-setting {
@@ -2194,7 +2196,7 @@ textarea:focus-visible {
 
 .repeat-loop-row,
 .repeat-ct-range-row {
-  grid-column: 1 / -1;
+  grid-column: 1;
   min-width: 0;
   display: flex;
   align-items: center;
