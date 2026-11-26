@@ -1,7 +1,7 @@
 import {
   Blocks,
   CircleGauge,
-  GitBranch,
+  Clock3,
   TimerReset,
 } from "lucide-react";
 import type { Scenario, ScheduleResult } from "../types";
@@ -26,6 +26,9 @@ export default function MetricGrid({
   const effectiveRepeat = schedule?.repeat_count ?? repeatCount;
   const bottleneck = scenario.lanes.find(
     (lane) => lane.id === metrics?.bottleneck_lane,
+  );
+  const laneMetricMap = new Map(
+    metrics?.lane_metrics.map((metric) => [metric.lane, metric]) ?? [],
   );
   return (
     <section className="metric-grid" aria-label="排程关键指标">
@@ -68,39 +71,76 @@ export default function MetricGrid({
 
       <article
         className="metric-card"
-        title="瓶颈单元：执行单元占用时间除以批次总时间后，利用率最高的执行单元。"
+        title="利用率：执行单元累计占用时间除以批次总时间。橙色高亮为瓶颈单元。"
       >
         <div className="metric-icon metric-icon-orange">
           <CircleGauge size={18} />
         </div>
-        <div className="metric-copy">
-          <span className="metric-label">瓶颈单元</span>
-          <strong className="metric-text">
-            {bottleneck?.name.split(" / ")[0] ?? "—"}
-          </strong>
-          <span className="metric-foot">
-            利用率 {metrics?.bottleneck_utilization.toFixed(0) ?? "—"}%
-          </span>
+        <div className="metric-copy metric-lane-copy">
+          <span className="metric-label">利用率情况</span>
+          <div className="metric-lane-list">
+            {scenario.lanes.map((lane) => {
+              const utilization = laneMetricMap.get(lane.id)?.utilization;
+              return (
+                <span
+                  className={`metric-lane-row ${
+                    lane.id === bottleneck?.id ? "is-bottleneck" : ""
+                  }`}
+                  key={lane.id}
+                  title={`${lane.name} 利用率 ${
+                    utilization?.toFixed(1) ?? "—"
+                  }%`}
+                >
+                  <i style={{ background: lane.color }} />
+                  <em>{lane.short_name}</em>
+                  <b>
+                    {utilization == null
+                      ? "—"
+                      : `${utilization.toFixed(0)}%`}
+                  </b>
+                </span>
+              );
+            })}
+          </div>
         </div>
       </article>
 
       <article
         className="metric-card"
-        title="关键路径：由实际排程中决定批次完成时间的动作、依赖等待和同单元串行关系组成的零余量链。"
+        title="等待时间：批次总时间减去该执行单元的累计占用时间，包含未占用、依赖等待和资源等待。"
       >
         <div className="metric-icon metric-icon-green">
-          <GitBranch size={18} />
+          <Clock3 size={18} />
         </div>
-        <div className="metric-copy">
-          <span className="metric-label">关键路径</span>
-          <strong>
-            {metrics?.critical_task_count ?? "—"}
-            <small> 个动作</small>
-          </strong>
-          <span className="metric-foot">
-            约束时长{" "}
-            {metrics ? formatSeconds(metrics.critical_path_duration) : "—"}
-          </span>
+        <div className="metric-copy metric-lane-copy">
+          <span className="metric-label">等待时间</span>
+          <div className="metric-lane-list wait-list">
+            {scenario.lanes.map((lane) => {
+              const busyTime = laneMetricMap.get(lane.id)?.busy_time;
+              const waitingTime =
+                metrics && busyTime != null
+                  ? Math.max(0, metrics.makespan - busyTime)
+                  : null;
+              return (
+                <span
+                  className="metric-lane-row"
+                  key={lane.id}
+                  title={`${lane.name} 等待/空闲 ${formatSeconds(
+                    waitingTime ?? 0,
+                    1,
+                  )}`}
+                >
+                  <i style={{ background: lane.color }} />
+                  <em>{lane.short_name}</em>
+                  <b>
+                    {waitingTime == null
+                      ? "—"
+                      : formatSeconds(waitingTime, 1)}
+                  </b>
+                </span>
+              );
+            })}
+          </div>
         </div>
       </article>
     </section>

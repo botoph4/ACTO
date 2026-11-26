@@ -1645,7 +1645,7 @@ textarea:focus-visible {
 
 .metric-card {
   min-width: 0;
-  height: 98px;
+  height: 126px;
   padding: 14px;
   background: white;
   border: 1px solid var(--line);
@@ -1695,6 +1695,67 @@ textarea:focus-visible {
   min-width: 0;
   display: flex;
   flex-direction: column;
+}
+
+.metric-lane-copy {
+  flex: 1;
+}
+
+.metric-lane-list {
+  margin-top: 4px;
+  display: grid;
+  gap: 0;
+  max-height: 86px;
+  overflow-y: auto;
+}
+
+.metric-lane-row {
+  min-width: 0;
+  height: 11px;
+  padding: 0 2px;
+  border-radius: 3px;
+  color: #6f7b8f;
+  display: grid;
+  grid-template-columns: 4px minmax(10px, 1fr) auto;
+  align-items: center;
+  gap: 3px;
+  font-size: calc(7px * var(--font-scale, 1));
+  line-height: 1;
+}
+
+.metric-lane-row i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+.metric-lane-row em {
+  min-width: 0;
+  overflow: hidden;
+  color: #929cac;
+  font-style: normal;
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+
+.metric-lane-row b {
+  color: #53617a;
+  font: 600 calc(7px * var(--font-scale, 1))/1 "DM Mono", monospace;
+  white-space: nowrap;
+}
+
+.metric-lane-row.is-bottleneck {
+  color: #9e5b22;
+  background: #fff5e8;
+}
+
+.metric-lane-row.is-bottleneck em,
+.metric-lane-row.is-bottleneck b {
+  color: #a15a1d;
+}
+
+.metric-lane-list.wait-list .metric-lane-row b {
+  color: #347b67;
 }
 
 .metric-label {
