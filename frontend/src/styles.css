@@ -1716,10 +1716,10 @@ textarea:focus-visible {
   border-radius: 3px;
   color: #6f7b8f;
   display: grid;
-  grid-template-columns: 4px minmax(10px, 1fr) auto;
+  grid-template-columns: 4px minmax(0, 1fr) auto;
   align-items: center;
   gap: 3px;
-  font-size: calc(7px * var(--font-scale, 1));
+  font-size: calc(8px * var(--font-scale, 1));
   line-height: 1;
 }
 
@@ -1731,16 +1731,15 @@ textarea:focus-visible {
 
 .metric-lane-row em {
   min-width: 0;
-  overflow: hidden;
   color: #929cac;
   font-style: normal;
   font-weight: 600;
-  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .metric-lane-row b {
   color: #53617a;
-  font: 600 calc(7px * var(--font-scale, 1))/1 "DM Mono", monospace;
+  font: 600 calc(7.5px * var(--font-scale, 1))/1 "DM Mono", monospace;
   white-space: nowrap;
 }
 

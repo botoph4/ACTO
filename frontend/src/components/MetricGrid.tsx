@@ -1,7 +1,5 @@
 import {
   Blocks,
-  CircleGauge,
-  Clock3,
   TimerReset,
 } from "lucide-react";
 import type { Scenario, ScheduleResult } from "../types";
@@ -70,12 +68,9 @@ export default function MetricGrid({
       </article>
 
       <article
-        className="metric-card"
+        className="metric-card metric-detail-card"
         title="利用率：执行单元累计占用时间除以批次总时间。橙色高亮为瓶颈单元。"
       >
-        <div className="metric-icon metric-icon-orange">
-          <CircleGauge size={18} />
-        </div>
         <div className="metric-copy metric-lane-copy">
           <span className="metric-label">利用率情况</span>
           <div className="metric-lane-list">
@@ -92,7 +87,7 @@ export default function MetricGrid({
                   }%`}
                 >
                   <i style={{ background: lane.color }} />
-                  <em>{lane.short_name}</em>
+                  <em>{lane.name}</em>
                   <b>
                     {utilization == null
                       ? "—"
@@ -106,12 +101,9 @@ export default function MetricGrid({
       </article>
 
       <article
-        className="metric-card"
+        className="metric-card metric-detail-card"
         title="等待时间：批次总时间减去该执行单元的累计占用时间，包含未占用、依赖等待和资源等待。"
       >
-        <div className="metric-icon metric-icon-green">
-          <Clock3 size={18} />
-        </div>
         <div className="metric-copy metric-lane-copy">
           <span className="metric-label">等待时间</span>
           <div className="metric-lane-list wait-list">
@@ -131,7 +123,7 @@ export default function MetricGrid({
                   )}`}
                 >
                   <i style={{ background: lane.color }} />
-                  <em>{lane.short_name}</em>
+                  <em>{lane.name}</em>
                   <b>
                     {waitingTime == null
                       ? "—"
