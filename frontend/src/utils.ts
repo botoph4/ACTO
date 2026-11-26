@@ -97,11 +97,8 @@ export function calculateCycleTiming(
       sampleCount: 0,
     };
   }
-  const average =
-    cycleDurations.reduce((total, duration) => total + duration, 0) /
-    cycleDurations.length;
   return {
-    average,
+    average: fallback,
     shortest: Math.min(...cycleDurations),
     sampleCount: cycleDurations.length,
   };
