@@ -67,23 +67,17 @@ export function calculateCycleTiming(
       ? Array.from(
           {
             length:
-              effectiveRepeat === 2
+              effectiveRepeat === 3
                 ? 1
-                : effectiveRepeat === 3
-                  ? 1
+                : effectiveRepeat < 3
+                  ? 0
                   : Math.max(0, effectiveRepeat - 3),
           },
           (_, index) => {
             const startIteration =
-              effectiveRepeat === 2
-                ? 1
-                : effectiveRepeat === 3
-                  ? 2
-                  : index + 2;
+              effectiveRepeat === 3 ? 1 : index + 2;
             const endIteration =
-              effectiveRepeat === 3
-                ? 3
-                : startIteration + 1;
+              startIteration + 1;
             const currentStart = startsByIteration.get(startIteration);
             const nextStart = startsByIteration.get(endIteration);
             return currentStart == null || nextStart == null
@@ -109,7 +103,7 @@ export function calculateCycleTiming(
 
   if (!cycleDurations.length) {
     return {
-      average: null,
+      average: fallback,
       shortest: null,
       sampleCount: 0,
     };

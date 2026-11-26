@@ -40,7 +40,7 @@ export default function RepeatSummary({
   const [openHelp, setOpenHelp] = useState<
     "average" | "shortest" | null
   >(null);
-  const canShowShortest = repeatCount > 1;
+  const canShowShortest = repeatCount > 2;
   const usesAdjacentInterval =
     ctStartTaskId != null && ctStartTaskId === ctEndTaskId;
 
@@ -156,7 +156,7 @@ export default function RepeatSummary({
                 id="shortest-ct-help"
                 role="tooltip"
               >
-                最短 CT 按“最短 CT 统计范围”计算：2 次取第 1→2 次间隔，3 次取第 2→3 次间隔，4 次以上排除首尾循环。
+                最短 CT 按“最短 CT 统计范围”计算：3 次取第 1→2 次间隔，4 次以上排除首尾循环，1-2 次不显示。
               </span>
             </button>
           </span>
