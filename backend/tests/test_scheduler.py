@@ -36,6 +36,32 @@ def test_precedence_and_lane_exclusivity():
     assert result.metrics.makespan == 5
 
 
+def test_lane_capacity_allows_parallel_use_of_multiple_slots():
+    scenario = Scenario(
+        id="dual-slot",
+        name="dual-slot",
+        lanes=[
+            Lane(
+                id="fixture",
+                name="Fixture",
+                short_name="F",
+                color="#000000",
+                capacity=2,
+            )
+        ],
+        tasks=[
+            Task(id="a", name="A", lane="fixture", duration=2, color="#111111"),
+            Task(id="b", name="B", lane="fixture", duration=3, color="#222222"),
+        ],
+    )
+    result = solve_schedule(scenario, time_limit_seconds=1)
+    by_id = {item.id: item for item in result.scheduled_tasks}
+
+    assert by_id["a"].start == by_id["b"].start == 0
+    assert result.metrics.makespan == 3
+    assert result.metrics.lane_metrics[0].utilization == 83.3
+
+
 def test_global_non_parallel_task_cannot_overlap_other_lane():
     scenario = Scenario(
         id="exclusive",

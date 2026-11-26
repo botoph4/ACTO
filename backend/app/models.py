@@ -28,6 +28,7 @@ class Lane(BaseModel):
     short_name: str
     color: str
     description: str = ""
+    capacity: int = Field(default=1, ge=1, le=20)
 
 
 class Task(BaseModel):
