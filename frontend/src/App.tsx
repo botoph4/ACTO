@@ -1023,6 +1023,26 @@ export default function App() {
     hasErrors || !schedule
       ? null
       : schedule.metrics.makespan / Math.max(1, schedule.repeat_count ?? repeatCount);
+  const shortestCycleTime = (() => {
+    if (hasErrors || !schedule || !cycleTime) return null;
+    const effectiveRepeat = schedule.repeat_count ?? repeatCount;
+    if (effectiveRepeat <= 1 || !loopStartTaskId) return cycleTime;
+    const cycleStarts = schedule.scheduled_tasks
+      .filter(
+        (task) => (task.template_id ?? task.id) === loopStartTaskId,
+      )
+      .sort((left, right) => (left.iteration ?? 1) - (right.iteration ?? 1))
+      .map((task) => task.start);
+    if (cycleStarts.length < 2) return cycleTime;
+    const intervals = cycleStarts
+      .slice(1)
+      .map((start, index) => start - cycleStarts[index]);
+    intervals.push(schedule.metrics.makespan - cycleStarts.at(-1)!);
+    const positiveIntervals = intervals.filter((value) => value > 0.0001);
+    return positiveIntervals.length
+      ? Math.min(...positiveIntervals)
+      : cycleTime;
+  })();
   const parallelWindows =
     schedule && !hasErrors
       ? computeParallelWindows(schedule, scenario)
@@ -1499,11 +1519,13 @@ export default function App() {
             baselineMakespan={baselineMakespan}
             hasErrors={hasErrors}
             repeatCount={repeatCount}
+            shortestCycleTime={shortestCycleTime}
           />
 
           <RepeatSummary
             repeatCount={repeatCount}
             cycleTime={cycleTime}
+            shortestCycleTime={shortestCycleTime}
             tasks={scenario.tasks}
             loopStartTaskId={loopStartTaskId}
             loopReleaseTaskId={loopReleaseTaskId}

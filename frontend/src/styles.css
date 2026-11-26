@@ -1645,7 +1645,7 @@ textarea:focus-visible {
 
 .metric-card {
   min-width: 0;
-  height: 98px;
+  height: 108px;
   padding: 14px;
   background: white;
   border: 1px solid var(--line);
@@ -1740,6 +1740,28 @@ textarea:focus-visible {
 .metric-foot-error {
   color: #b25255;
   font-weight: 600;
+}
+
+.metric-ct-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.metric-ct-foot b {
+  color: #56647b;
+  font-weight: 700;
+}
+
+.metric-shortest-ct {
+  color: #2c8069;
+}
+
+.metric-shortest-ct b {
+  color: #21745c;
 }
 
 .metric-sequence {
@@ -1923,6 +1945,19 @@ textarea:focus-visible {
 .repeat-formula .repeat-ct-result strong {
   color: #274bc0;
   font-size: calc(11px * var(--font-scale, 1));
+}
+
+.repeat-formula .repeat-shortest-result {
+  color: #277960;
+  background: #eaf7f2;
+}
+
+.repeat-formula .repeat-shortest-result strong {
+  color: #1e7058;
+}
+
+.repeat-formula .repeat-shortest-result small {
+  color: #629887;
 }
 
 .repeat-ct-result small {

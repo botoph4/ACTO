@@ -5,6 +5,7 @@ import { clamp, formatSeconds, taskCode } from "../utils";
 type Props = {
   repeatCount: number;
   cycleTime: number | null;
+  shortestCycleTime: number | null;
   tasks: Task[];
   loopStartTaskId: string | null;
   loopReleaseTaskId: string | null;
@@ -17,6 +18,7 @@ const PRESETS = [1, 3, 5, 10, 20];
 export default function RepeatSummary({
   repeatCount,
   cycleTime,
+  shortestCycleTime,
   tasks,
   loopStartTaskId,
   loopReleaseTaskId,
@@ -104,8 +106,17 @@ export default function RepeatSummary({
         </span>
         <i>=</i>
         <span className="repeat-ct-result">
-          折算 CT
+          平均 CT
           <strong>{calculatedCt == null ? "—" : formatSeconds(calculatedCt, 1)}</strong>
+          <small>/ 件</small>
+        </span>
+        <span className="repeat-ct-result repeat-shortest-result">
+          最短 CT
+          <strong>
+            {shortestCycleTime == null
+              ? "—"
+              : formatSeconds(shortestCycleTime, 1)}
+          </strong>
           <small>/ 件</small>
         </span>
       </div>

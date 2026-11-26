@@ -13,6 +13,7 @@ type Props = {
   baselineMakespan: number | null;
   hasErrors: boolean;
   repeatCount: number;
+  shortestCycleTime: number | null;
 };
 
 export default function MetricGrid({
@@ -21,6 +22,7 @@ export default function MetricGrid({
   baselineMakespan,
   hasErrors,
   repeatCount,
+  shortestCycleTime,
 }: Props) {
   const metrics = schedule?.metrics;
   const effectiveRepeat = schedule?.repeat_count ?? repeatCount;
@@ -42,17 +44,31 @@ export default function MetricGrid({
           <strong>
             {metrics ? formatSeconds(metrics.makespan) : "—"}
           </strong>
-          <span
-            className={`metric-foot ${hasErrors ? "metric-foot-error" : ""}`}
-          >
-            {hasErrors
-              ? schedule
-                ? "上次可行解 · 当前约束异常"
-                : "无有效排程结果 · 请修复约束"
-              : metrics && effectiveCt != null
-                ? `平均单次 ${formatSeconds(effectiveCt)} × ${effectiveRepeat} 次 · 折算 CT ${formatSeconds(effectiveCt)}/件`
+          {!hasErrors && metrics && effectiveCt != null ? (
+            <span className="metric-foot metric-ct-foot">
+              <span>
+                平均 CT <b>{formatSeconds(effectiveCt)}</b>
+              </span>
+              <span className="metric-shortest-ct">
+                最短 CT{" "}
+                <b>
+                  {shortestCycleTime == null
+                    ? "—"
+                    : formatSeconds(shortestCycleTime)}
+                </b>
+              </span>
+            </span>
+          ) : (
+            <span
+              className={`metric-foot ${hasErrors ? "metric-foot-error" : ""}`}
+            >
+              {hasErrors
+                ? schedule
+                  ? "上次可行解 · 当前约束异常"
+                  : "无有效排程结果 · 请修复约束"
                 : "等待排程结果"}
-          </span>
+            </span>
+          )}
         </div>
         <span className="metric-sequence">01</span>
       </article>
