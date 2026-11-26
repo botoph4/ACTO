@@ -36,6 +36,7 @@ export function calculateCycleTiming(
   schedule: ScheduleResult,
   repeatCount: number,
   loopStartTaskId: string | null,
+  loopReleaseTaskId: string | null,
 ): CycleTimingMetrics {
   const effectiveRepeat = Math.max(
     1,
@@ -54,8 +55,20 @@ export function calculateCycleTiming(
               (left.iteration ?? 1) - (right.iteration ?? 1),
           )
           .map((task) => task.start);
+  const cycleEnds =
+    loopReleaseTaskId == null
+      ? []
+      : schedule.scheduled_tasks
+          .filter(
+            (task) => (task.template_id ?? task.id) === loopReleaseTaskId,
+          )
+          .sort(
+            (left, right) =>
+              (left.iteration ?? 1) - (right.iteration ?? 1),
+          )
+          .map((task) => task.end);
 
-  if (cycleStarts.length < 2) {
+  if (cycleStarts.length < 2 || cycleEnds.length < 2) {
     return {
       average: fallback,
       first: fallback,
@@ -65,19 +78,19 @@ export function calculateCycleTiming(
     };
   }
 
-  const first = Math.max(0, cycleStarts[1] - cycleStarts[0]);
+  const first = Math.max(0, cycleEnds[0] - cycleStarts[0]);
   const middleIntervals = cycleStarts
     .slice(2)
     .map((start, index) => start - cycleStarts[index + 1])
     .filter((value) => value > 0.0001);
-  const middleShortest = middleIntervals.length
-    ? Math.min(...middleIntervals)
-    : first;
   const middleCount = Math.max(0, effectiveRepeat - 2);
   const last = Math.max(
     0,
-    schedule.metrics.makespan - cycleStarts.at(-1)!,
+    cycleEnds.at(-1)! - cycleStarts.at(-1)!,
   );
+  const middleShortest = middleIntervals.length
+    ? Math.min(...middleIntervals)
+    : Math.min(first, last);
   const average =
     (first + middleCount * middleShortest + last) / effectiveRepeat;
 

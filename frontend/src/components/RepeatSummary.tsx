@@ -106,7 +106,7 @@ export default function RepeatSummary({
         </span>
         <i>+</i>
         <span title="最后一次循环时间">
-          末次时间
+          末次 CT
           <strong>
             {lastCycleTime == null
               ? "—"

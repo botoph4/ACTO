@@ -1043,7 +1043,12 @@ export default function App() {
   const cycleTiming =
     hasErrors || !schedule
       ? null
-      : calculateCycleTiming(schedule, repeatCount, loopStartTaskId);
+      : calculateCycleTiming(
+          schedule,
+          repeatCount,
+          loopStartTaskId,
+          loopReleaseTaskId,
+        );
   const cycleTime = cycleTiming?.average ?? null;
   const shortestCycleTime = cycleTiming?.middleShortest ?? null;
   const parallelWindows =
