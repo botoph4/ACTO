@@ -152,7 +152,7 @@ export async function requestSchedule(
     headers: { "Content-Type": "application/json", ...authHeaders() },
     body: JSON.stringify({
       scenario,
-      time_limit_seconds: 2,
+      time_limit_seconds: 60,
       optimize: true,
     }),
     signal,

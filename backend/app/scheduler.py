@@ -413,7 +413,7 @@ def _expand_cycles(
 
 def solve_schedule(
     scenario: Scenario,
-    time_limit_seconds: float = 2,
+    time_limit_seconds: float = 60,
     optimize: bool = True,
 ) -> ScheduleResponse:
     started_at = perf_counter()
@@ -499,7 +499,7 @@ def solve_schedule(
         model.Minimize(makespan * 1000 + sum(ends.values()))
 
     solver = cp_model.CpSolver()
-    solver.parameters.max_time_in_seconds = min(2.0, time_limit_seconds)
+    solver.parameters.max_time_in_seconds = min(60.0, time_limit_seconds)
     solver.parameters.num_search_workers = 4
     solver.parameters.relative_gap_limit = 0.001
     solver.parameters.log_search_progress = False

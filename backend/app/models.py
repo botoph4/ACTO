@@ -104,7 +104,7 @@ class Scenario(BaseModel):
 
 class ScheduleRequest(BaseModel):
     scenario: Scenario
-    time_limit_seconds: float = Field(default=2, ge=0.25, le=30)
+    time_limit_seconds: float = Field(default=60, ge=0.25, le=60)
     optimize: bool = True
 
 
