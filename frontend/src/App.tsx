@@ -31,7 +31,7 @@ import {
   Wifi,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ApiError,
   fetchDemoScenario,
@@ -121,6 +121,18 @@ function cloneScenario(scenario: Scenario): Scenario {
   return JSON.parse(JSON.stringify(scenario)) as Scenario;
 }
 
+function toSchedulingScenario(scenario: Scenario): Scenario {
+  return {
+    id: scenario.id,
+    name: "",
+    description: "",
+    repeat_count: scenario.repeat_count,
+    loop: scenario.loop,
+    lanes: scenario.lanes,
+    tasks: scenario.tasks,
+  };
+}
+
 function makeWorksheet(name: string, scenario: Scenario): Worksheet {
   return {
     id: uid("sheet"),
@@ -187,6 +199,16 @@ export default function App() {
   const activeWorksheet =
     worksheets.find((worksheet) => worksheet.id === activeWorksheetId) ?? null;
   const scenario = activeWorksheet?.scenario ?? null;
+  const schedulingScenario = useMemo(
+    () => (scenario ? toSchedulingScenario(scenario) : null),
+    [
+      scenario?.id,
+      scenario?.repeat_count,
+      scenario?.loop,
+      scenario?.lanes,
+      scenario?.tasks,
+    ],
+  );
 
   const showToast = useCallback(
     (message: string, tone: ToastState["tone"] = "success") => {
@@ -519,16 +541,16 @@ export default function App() {
   );
 
   useEffect(() => {
-    if (!scenario) return;
+    if (!schedulingScenario) return;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
-      void runSchedule(scenario, { signal: controller.signal });
+      void runSchedule(schedulingScenario, { signal: controller.signal });
     }, 260);
     return () => {
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [scenario, runSchedule]);
+  }, [schedulingScenario, runSchedule]);
 
   useEffect(() => {
     if (!authUser || !worksheets.length || !activeWorksheetId) return;
@@ -1079,7 +1101,8 @@ export default function App() {
       (task) => task.manual_start != null,
     ).length;
     if (manualCount) updateScenario(automaticScenario);
-    const key = JSON.stringify(automaticScenario);
+    const schedulingScenario = toSchedulingScenario(automaticScenario);
+    const key = JSON.stringify(schedulingScenario);
     if (schedule && lastScheduledKey.current === key && !hasErrors) {
       showToast(
         `当前结果已是最新：${formatSeconds(schedule.metrics.makespan, 2)}，无需重复求解`,
@@ -1087,7 +1110,7 @@ export default function App() {
       );
       return;
     }
-    void runSchedule(automaticScenario, { announce: true });
+    void runSchedule(schedulingScenario, { announce: true });
   };
 
   const clearManualMoves = () => {
