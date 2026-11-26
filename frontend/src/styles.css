@@ -2090,6 +2090,31 @@ textarea:focus-visible {
   justify-content: flex-end;
 }
 
+.ct-result-with-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ct-help-button {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #8e99aa;
+  background: transparent;
+  cursor: help;
+}
+
+.ct-help-button:hover,
+.ct-help-button:focus-visible {
+  color: #315efb;
+  background: #edf2ff;
+}
+
 .repeat-results .repeat-ct-result {
   height: 29px;
   padding: 0 8px;

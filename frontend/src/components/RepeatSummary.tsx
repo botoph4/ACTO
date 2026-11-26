@@ -1,4 +1,4 @@
-import { Minus, Plus, Repeat2, TimerReset } from "lucide-react";
+import { CircleHelp, Minus, Plus, Repeat2, TimerReset } from "lucide-react";
 import type { Task } from "../types";
 import { clamp, formatSeconds, taskCode } from "../utils";
 
@@ -89,22 +89,42 @@ export default function RepeatSummary({
       </div>
 
       <div className="repeat-results">
-        <span className="repeat-ct-result">
-          平均 CT
-          <strong>
-            {cycleTime == null ? "—" : formatSeconds(cycleTime, 1)}
-          </strong>
-          <small>/ 件</small>
-        </span>
-        {!usesSimpleAverage && (
-          <span className="repeat-ct-result repeat-shortest-result">
-            最短 CT
+        <span className="ct-result-with-help">
+          <span className="repeat-ct-result">
+            平均 CT
             <strong>
-              {shortestCycleTime == null
-                ? "—"
-                : formatSeconds(shortestCycleTime, 1)}
+              {cycleTime == null ? "—" : formatSeconds(cycleTime, 1)}
             </strong>
             <small>/ 件</small>
+          </span>
+          <button
+            type="button"
+            className="ct-help-button"
+            aria-label="查看平均 CT 计算说明"
+            title="平均 CT = 批次总时间 ÷ 总次数。用于比较不同方案的单件折算节拍。"
+          >
+            <CircleHelp size={14} />
+          </button>
+        </span>
+        {!usesSimpleAverage && (
+          <span className="ct-result-with-help">
+            <span className="repeat-ct-result repeat-shortest-result">
+              最短 CT
+              <strong>
+                {shortestCycleTime == null
+                  ? "—"
+                  : formatSeconds(shortestCycleTime, 1)}
+              </strong>
+              <small>/ 件</small>
+            </span>
+            <button
+              type="button"
+              className="ct-help-button"
+              aria-label="查看最短 CT 计算说明"
+              title="最短 CT = 在“最短 CT 统计范围”内逐次计算每次 CT 后取最小值。若起点、终点为同一动作，则取该动作相邻两次出现的时间间隔。"
+            >
+              <CircleHelp size={14} />
+            </button>
           </span>
         )}
       </div>
@@ -161,7 +181,7 @@ export default function RepeatSummary({
       <div className="repeat-ct-range-row">
         <span>
           <TimerReset size={12} />
-          CT 统计范围
+          最短 CT 统计范围
         </span>
         <label>
           起点
@@ -205,7 +225,7 @@ export default function RepeatSummary({
         <small>
           {usesAdjacentInterval
             ? "起止动作相同：按相邻两次动作的时间间隔计算"
-            : "按每次实际起止动作计算平均 CT 和最短 CT"}
+            : "按每次实际起止动作计算最短 CT"}
         </small>
       </div>
 
