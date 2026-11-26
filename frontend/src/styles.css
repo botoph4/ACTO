@@ -1639,13 +1639,17 @@ textarea:focus-visible {
 .metric-grid {
   flex: 0 0 auto;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns:
+    minmax(0, 1.15fr)
+    minmax(0, 0.95fr)
+    minmax(0, 1.35fr)
+    minmax(0, 1.35fr);
   gap: 10px;
 }
 
 .metric-card {
   min-width: 0;
-  height: 126px;
+  height: 134px;
   padding: 14px;
   background: white;
   border: 1px solid var(--line);
@@ -1701,17 +1705,32 @@ textarea:focus-visible {
   flex: 1;
 }
 
+.metric-detail-card {
+  padding: 10px;
+  gap: 6px;
+}
+
+.metric-detail-card .metric-icon {
+  flex-basis: 24px;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+}
+
 .metric-lane-list {
   margin-top: 4px;
   display: grid;
   gap: 0;
-  max-height: 86px;
+  max-height: 94px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scrollbar-gutter: stable;
 }
 
 .metric-lane-row {
   min-width: 0;
-  height: 11px;
+  height: 13px;
   padding: 0 2px;
   border-radius: 3px;
   color: #6f7b8f;
@@ -1719,7 +1738,8 @@ textarea:focus-visible {
   grid-template-columns: 4px minmax(0, 1fr) auto;
   align-items: center;
   gap: 3px;
-  font-size: calc(8px * var(--font-scale, 1));
+  scroll-snap-align: start;
+  font-size: calc(8.8px * var(--font-scale, 1));
   line-height: 1;
 }
 
@@ -1739,7 +1759,7 @@ textarea:focus-visible {
 
 .metric-lane-row b {
   color: #53617a;
-  font: 600 calc(7.5px * var(--font-scale, 1))/1 "DM Mono", monospace;
+  font: 600 calc(8.2px * var(--font-scale, 1))/1 "DM Mono", monospace;
   white-space: nowrap;
 }
 
