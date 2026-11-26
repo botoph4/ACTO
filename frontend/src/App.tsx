@@ -1538,6 +1538,7 @@ export default function App() {
             repeatCount={repeatCount}
             cycleTime={cycleTime}
             shortestCycleTime={shortestCycleTime}
+            batchMakespan={hasErrors ? null : schedule?.metrics.makespan ?? null}
             firstCycleTime={cycleTiming?.first ?? null}
             middleCycleCount={cycleTiming?.middleCount ?? null}
             lastCycleTime={cycleTiming?.last ?? null}

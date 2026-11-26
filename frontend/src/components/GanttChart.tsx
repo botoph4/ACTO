@@ -776,17 +776,19 @@ export default function GanttChart({
                   <em>s / 件</em>
                 </span>
               </span>
-              <span className="gantt-export-metric shortest">
-                <small>最短 CT</small>
-                <span>
-                  <strong>
-                    {shortestCycleTime == null
-                      ? "—"
-                      : shortestCycleTime.toFixed(1)}
-                  </strong>
-                  <em>s / 件</em>
+              {repeatCount > 2 && (
+                <span className="gantt-export-metric shortest">
+                  <small>最短 CT</small>
+                  <span>
+                    <strong>
+                      {shortestCycleTime == null
+                        ? "—"
+                        : shortestCycleTime.toFixed(1)}
+                    </strong>
+                    <em>s / 件</em>
+                  </span>
                 </span>
-              </span>
+              )}
             </div>
           </div>
           <div className="gantt-header">

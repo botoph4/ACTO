@@ -43,6 +43,16 @@ export function calculateCycleTiming(
     schedule.repeat_count ?? repeatCount,
   );
   const fallback = schedule.metrics.makespan / effectiveRepeat;
+  if (effectiveRepeat <= 2) {
+    return {
+      average: fallback,
+      first: fallback,
+      middleCount: 0,
+      middleShortest: fallback,
+      last: fallback,
+    };
+  }
+
   const cycleStarts =
     loopStartTaskId == null
       ? []
