@@ -242,7 +242,7 @@ def make_metrics_table(styles: dict[str, ParagraphStyle], width: float) -> Table
         ("批次总时间", "最后完成动作的结束时间。越小表示批次节拍越短。"),
         (
             "平均 / 最短 CT",
-            "在“CT 统计范围”指定起止动作。每次按范围计算 CT，平均 CT 取有效样本均值，最短 CT 取样本最小值。",
+            "平均 CT = 批次总时间 ÷ 总次数。最短 CT 在“最短 CT 统计范围”内逐次计算并取最小值。",
         ),
         ("并行重合", "多个执行单元同时工作的累计时间，用于判断并行收益。"),
         (
@@ -466,7 +466,7 @@ def build_repeat_page(output: Path) -> None:
         Paragraph("重复次数与循环边界", styles["title"]),
         Paragraph(
             "重复次数用于评估批量生产。动作模板只维护一份，求解器会展开对应轮次，"
-            "CT 统计范围可与排程循环边界分开设置。甘特图循环标签仅显示该次 CT "
+            "最短 CT 统计范围可与排程循环边界分开设置。甘特图循环标签仅显示该次 CT "
             "起点动作的时间戳。",
             styles["lead"],
         ),
@@ -478,19 +478,24 @@ def build_repeat_page(output: Path) -> None:
         Spacer(1, 9),
         Paragraph("平均 CT 与最短 CT", styles["h2"]),
         Paragraph(
+            "平均 CT 固定为批次总时间除以总次数，不受自定义 CT 统计范围变化影响。",
+            compact_bullet,
+            bulletText="•",
+        ),
+        Paragraph(
             "CT 起点与终点不同时，每次 CT = 终点动作结束时间 - 起点动作开始时间。",
             compact_bullet,
             bulletText="•",
         ),
         Paragraph(
-            "CT 起点与终点相同时，按该动作相邻两次出现的开始时间间隔计算；"
-            "最后一次没有下一次动作，因此不纳入样本。",
+            "最短 CT 取全部有效循环 CT 的最小值；起点和终点为同一动作时，"
+            "使用该动作相邻两次出现的开始时间间隔，最后一次不纳入样本。",
             compact_bullet,
             bulletText="•",
         ),
         Paragraph(
-            "平均 CT 为全部有效循环 CT 的平均值，最短 CT 为其中的最小值，因此"
-            "平均 CT 不会小于最短 CT。",
+            "平均 CT 和最短 CT 分两行显示。点击结果后的问号图标可查看计算说明，"
+            "鼠标悬停也会显示说明。",
             compact_bullet,
             bulletText="•",
         ),
@@ -685,8 +690,9 @@ def main() -> None:
         raise RuntimeError(f"更新页缺少必要内容：{', '.join(missing)}")
     repeat_text = updated.pages[REPEAT_PAGE_INDEX].extract_text() or ""
     repeat_required = (
-        "CT 起点与终点不同",
-        "CT 起点与终点相同",
+        "平均 CT 固定",
+        "起点和终点为同一动作",
+        "问号图标",
         "60 秒",
         "时间戳",
     )
