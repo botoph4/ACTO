@@ -567,6 +567,7 @@ export default function GanttChart({
     const node = exportRef.current;
     if (!node || !schedule || isExportingImage) return;
     setIsExportingImage(true);
+    node.classList.add("gantt-exporting");
     try {
       await document.fonts?.ready;
       const width = Math.ceil(node.scrollWidth);
@@ -622,6 +623,7 @@ export default function GanttChart({
         "error",
       );
     } finally {
+      node.classList.remove("gantt-exporting");
       setIsExportingImage(false);
     }
   };
