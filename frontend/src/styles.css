@@ -1963,12 +1963,12 @@ textarea:focus-visible {
 }
 
 .repeat-summary {
-  flex: 0 0 118px;
+  flex: 0 0 138px;
   min-width: 0;
   padding: 6px 12px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: 58px 24px 24px;
+  grid-template-rows: 58px 32px 32px;
   align-items: center;
   column-gap: 16px;
   border: 1px solid #dfe6f1;
@@ -2199,7 +2199,7 @@ textarea:focus-visible {
   align-items: center;
   gap: 7px;
   color: #7e899b;
-  font-size: 7.5px;
+  font-size: calc(9px * var(--font-scale, 1));
   white-space: nowrap;
 }
 
@@ -2229,15 +2229,15 @@ textarea:focus-visible {
 
 .repeat-loop-row select,
 .repeat-ct-range-row select {
-  width: 145px;
-  height: 21px;
-  padding: 0 5px;
+  width: 240px;
+  height: 27px;
+  padding: 0 6px;
   border: 1px solid #e0e6ef;
   border-radius: 5px;
   color: #4f5e78;
   background: #fbfcfd;
   outline: none;
-  font-size: 7.5px;
+  font-size: calc(9px * var(--font-scale, 1));
 }
 
 .repeat-loop-row select:focus,
@@ -2257,8 +2257,8 @@ textarea:focus-visible {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #9aa3b2;
-  font-size: 7.2px;
+  color: #8792a4;
+  font-size: calc(8.4px * var(--font-scale, 1));
 }
 
 .insight-line-error {
