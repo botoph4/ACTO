@@ -37,6 +37,8 @@ MANUAL_OUTPUT_PATH = Path(
 ).expanduser()
 TARGET_PAGE_INDEX = 9
 WORKSHEET_PAGE_INDEX = 5
+REPEAT_PAGE_INDEX = 8
+FAQ_PAGE_INDEX = 12
 VERSION = "0.2.4"
 
 NAVY = colors.HexColor("#0B1733")
@@ -240,7 +242,7 @@ def make_metrics_table(styles: dict[str, ParagraphStyle], width: float) -> Table
         ("批次总时间", "最后完成动作的结束时间。越小表示批次节拍越短。"),
         (
             "平均 / 最短 CT",
-            "平均 CT 为批次总时间除以重复次数；最短 CT 为实际循环间隔中的最小值。",
+            "重复 1-2 次时平均 CT 为批次总时间除以总次数；3 次以上按首次、中间最短和末次循环加权。最短 CT 从中间循环间隔提取。",
         ),
         ("并行重合", "多个执行单元同时工作的累计时间，用于判断并行收益。"),
         (
@@ -443,6 +445,123 @@ def build_worksheet_page(output: Path) -> None:
     single_page_document(output, story, WORKSHEET_PAGE_INDEX + 1)
 
 
+def build_repeat_page(output: Path) -> None:
+    regular, bold = register_fonts()
+    styles = make_styles(regular, bold)
+    content_width = A4[0] - 128
+    screenshot = Image(
+        str(ROOT / "docs" / "acto-repeat-summary.png"),
+        width=content_width,
+        height=content_width / (1680 / 858),
+    )
+    compact_bullet = ParagraphStyle(
+        "RepeatCompactBullet",
+        parent=styles["bullet"],
+        fontSize=8.8,
+        leading=14,
+        spaceAfter=4,
+    )
+    story = [
+        Paragraph("SECTION 07", styles["section"]),
+        Paragraph("重复次数与循环边界", styles["title"]),
+        Paragraph(
+            "重复次数用于评估批量生产。动作模板只维护一份，求解器会展开对应轮次，"
+            "并在甘特图循环标签下显示每次循环的精确起始时间。",
+            styles["lead"],
+        ),
+        screenshot,
+        Paragraph(
+            "图 7-1 循环序号及起始时间标注在每次循环边界虚线的上方。",
+            styles["caption"],
+        ),
+        Spacer(1, 9),
+        Paragraph("平均 CT 与最短 CT", styles["h2"]),
+        Paragraph(
+            "重复 1-2 次时，平均 CT = 批次总时间 ÷ 总次数；此时不显示统计意义不足的最短 CT。",
+            compact_bullet,
+            bulletText="•",
+        ),
+        Paragraph(
+            "重复 3 次及以上时，平均 CT = [首次完整循环 CT + (总次数 - 2) × "
+            "中间最短 CT + 末次完整循环 CT] ÷ 总次数。",
+            compact_bullet,
+            bulletText="•",
+        ),
+        Paragraph(
+            "最短 CT 从首次循环之后的相邻循环起始间隔中提取，不包含最后收尾区间。",
+            compact_bullet,
+            bulletText="•",
+        ),
+        Spacer(1, 4),
+        callout(
+            "<b>高重复批次</b> 单次求解上限为 60 秒，CP-SAT 会并行搜索并以默认 "
+            "1% 相对间隙优先保证响应速度。若仍提示求解超时，请先降低重复次数完成"
+            "单循环和稳态节拍分析。",
+            content_width,
+            styles["callout"],
+            fill=SOFT_WARM,
+            accent=colors.HexColor("#D89543"),
+        ),
+    ]
+    single_page_document(output, story, REPEAT_PAGE_INDEX + 1)
+
+
+def build_faq_page(output: Path) -> None:
+    regular, bold = register_fonts()
+    styles = make_styles(regular, bold)
+    content_width = A4[0] - 128
+    rows = [
+        ("问题", "处理方法"),
+        ("页面打不开", "确认已连接公司局域网，再访问 http://10.8.1.106:18090 。"),
+        ("账号或密码错误", "检查大小写和输入法；仍无法登录时联系管理员创建或重置账号。"),
+        ("刷新后工作表仍在吗", "在当前浏览器和当前账号下会自动保存；清理浏览器数据前先导出 JSON。"),
+        ("切换电脑后没有工作表", "请使用“全部工作表 JSON”迁移。"),
+        ("显示约束异常", "查看异常面板中的标题和关联动作，常见原因是依赖闭环或引用失效。"),
+        (
+            "重复次数很高时报错",
+            "单次求解上限为 60 秒。若提示“求解超时”，先降低重复次数完成单循环分析。",
+        ),
+        ("PNG 中没有依赖线", "确认甘特图工具栏的“依赖线”处于开启状态，再重新导出。"),
+    ]
+    data = []
+    for index, (question, answer) in enumerate(rows):
+        style = styles["table_head"] if index == 0 else styles["table"]
+        data.append([Paragraph(question, style), Paragraph(answer, style)])
+    faq = Table(data, colWidths=[content_width * 0.27, content_width * 0.73])
+    faq.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), NAVY),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, SOFT_BLUE]),
+                ("GRID", (0, 0), (-1, -1), 0.45, LINE),
+                ("LEFTPADDING", (0, 0), (-1, -1), 9),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 9),
+                ("TOPPADDING", (0, 0), (-1, -1), 8),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ]
+        )
+    )
+    story = [
+        Paragraph("SECTION 11", styles["section"]),
+        Paragraph("常见问题", styles["title"]),
+        Paragraph(
+            "以下问题覆盖登录、保存、排程和结果解读。遇到异常时先记录错误标题"
+            "和关联动作。",
+            styles["lead"],
+        ),
+        faq,
+        Spacer(1, 14),
+        callout(
+            "<b>反馈问题时请提供</b> 当前工作表名称、重复次数、错误标题、关联动作"
+            "编号，以及导出的场景 JSON。",
+            content_width,
+            styles["callout"],
+        ),
+    ]
+    single_page_document(output, story, FAQ_PAGE_INDEX + 1)
+
+
 def merge_screenshot(
     page,
     image_path: Path,
@@ -478,7 +597,9 @@ def replace_manual_page(replacement: Path, output: Path) -> None:
     replacements = PdfReader(str(replacement))
     replacement_pages = {
         WORKSHEET_PAGE_INDEX: replacements.pages[0],
-        TARGET_PAGE_INDEX: replacements.pages[1],
+        REPEAT_PAGE_INDEX: replacements.pages[1],
+        TARGET_PAGE_INDEX: replacements.pages[2],
+        FAQ_PAGE_INDEX: replacements.pages[3],
     }
     screenshot_updates = {
         4: ("acto-preview.png", 51.02362, 423.5452, 493.2283, 251.817),
@@ -489,7 +610,6 @@ def replace_manual_page(replacement: Path, output: Path) -> None:
             493.2283,
             283.98,
         ),
-        8: ("acto-repeat-summary.png", 51.02362, 443.5452, 493.2283, 251.817),
         10: ("acto-gantt-drag.png", 51.02362, 443.5452, 493.2283, 251.817),
         11: ("acto-import-dialog.png", 51.02362, 443.5452, 493.2283, 251.817),
     }
@@ -534,14 +654,20 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="acto-manual-") as temp_dir:
         temp_path = Path(temp_dir)
         worksheet_page = temp_path / "worksheet-page.pdf"
+        repeat_page = temp_path / "repeat-page.pdf"
         metrics_page = temp_path / "metrics-page.pdf"
+        faq_page = temp_path / "faq-page.pdf"
         replacement = temp_path / "replacement-pages.pdf"
         merged = temp_path / "manual-updated.pdf"
         build_worksheet_page(worksheet_page)
+        build_repeat_page(repeat_page)
         build_metrics_page(metrics_page)
+        build_faq_page(faq_page)
         replacement_writer = PdfWriter()
         replacement_writer.add_page(PdfReader(str(worksheet_page)).pages[0])
+        replacement_writer.add_page(PdfReader(str(repeat_page)).pages[0])
         replacement_writer.add_page(PdfReader(str(metrics_page)).pages[0])
+        replacement_writer.add_page(PdfReader(str(faq_page)).pages[0])
         with replacement.open("wb") as stream:
             replacement_writer.write(stream)
         replace_manual_page(replacement, merged)
@@ -555,6 +681,15 @@ def main() -> None:
     missing = [phrase for phrase in required if phrase not in text]
     if missing:
         raise RuntimeError(f"更新页缺少必要内容：{', '.join(missing)}")
+    repeat_text = updated.pages[REPEAT_PAGE_INDEX].extract_text() or ""
+    repeat_required = ("重复 1-2 次", "60 秒", "起始时间")
+    repeat_missing = [
+        phrase for phrase in repeat_required if phrase not in repeat_text
+    ]
+    if repeat_missing:
+        raise RuntimeError(
+            f"重复批次页缺少必要内容：{', '.join(repeat_missing)}"
+        )
     print(f"已更新说明书：{MANUAL_OUTPUT_PATH}")
 
 
