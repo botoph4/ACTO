@@ -1,4 +1,4 @@
-import { Minus, Plus, Repeat2 } from "lucide-react";
+import { Minus, Plus, Repeat2, TimerReset } from "lucide-react";
 import type { Task } from "../types";
 import { clamp, formatSeconds, taskCode } from "../utils";
 
@@ -9,8 +9,11 @@ type Props = {
   tasks: Task[];
   loopStartTaskId: string | null;
   loopReleaseTaskId: string | null;
+  ctStartTaskId: string | null;
+  ctEndTaskId: string | null;
   onRepeatCountChange: (count: number) => void;
   onLoopChange: (startTaskId: string, releaseTaskId: string) => void;
+  onCtRangeChange: (startTaskId: string, endTaskId: string) => void;
 };
 
 const PRESETS = [1, 3, 5, 10, 20];
@@ -22,8 +25,11 @@ export default function RepeatSummary({
   tasks,
   loopStartTaskId,
   loopReleaseTaskId,
+  ctStartTaskId,
+  ctEndTaskId,
   onRepeatCountChange,
   onLoopChange,
+  onCtRangeChange,
 }: Props) {
   const change = (value: number) =>
     onRepeatCountChange(Math.round(clamp(value, 1, 999)));
@@ -148,6 +154,53 @@ export default function RepeatSummary({
         <small>
           下一次起点动作在上一轮回跳动作完成后启动
         </small>
+      </div>
+
+      <div className="repeat-ct-range-row">
+        <span>
+          <TimerReset size={12} />
+          CT 统计范围
+        </span>
+        <label>
+          起点
+          <select
+            value={ctStartTaskId ?? ""}
+            disabled={!tasks.length}
+            onChange={(event) =>
+              onCtRangeChange(
+                event.target.value,
+                ctEndTaskId ?? tasks.at(-1)?.id ?? "",
+              )
+            }
+          >
+            {tasks.map((task) => (
+              <option value={task.id} key={task.id}>
+                {codeById.get(task.id)} · {task.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <span className="repeat-ct-arrow">→</span>
+        <label>
+          终点
+          <select
+            value={ctEndTaskId ?? ""}
+            disabled={!tasks.length}
+            onChange={(event) =>
+              onCtRangeChange(
+                ctStartTaskId ?? tasks[0]?.id ?? "",
+                event.target.value,
+              )
+            }
+          >
+            {tasks.map((task) => (
+              <option value={task.id} key={task.id}>
+                {codeById.get(task.id)} · {task.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <small>按每次实际起止动作计算平均 CT 和最短 CT</small>
       </div>
 
     </section>

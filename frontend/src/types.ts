@@ -33,6 +33,11 @@ export type LoopConfig = {
   release_after_task_id: string;
 };
 
+export type CtRange = {
+  start_task_id: string;
+  end_task_id: string;
+};
+
 export type Scenario = {
   id: string;
   name: string;
@@ -40,6 +45,7 @@ export type Scenario = {
   tags?: string[];
   repeat_count?: number;
   loop?: LoopConfig | null;
+  ct_range?: CtRange | null;
   lanes: Lane[];
   tasks: Task[];
 };

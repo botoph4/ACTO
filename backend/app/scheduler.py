@@ -93,6 +93,20 @@ def _validate(scenario: Scenario) -> list[Diagnostic]:
                     )
                 )
 
+    if scenario.ct_range:
+        for label, task_id in (
+            ("CT 起始动作", scenario.ct_range.start_task_id),
+            ("CT 终止动作", scenario.ct_range.end_task_id),
+        ):
+            if task_id not in task_set:
+                errors.append(
+                    Diagnostic(
+                        level="error",
+                        title="CT 统计范围无效",
+                        detail=f"{label}引用了不存在的动作：{task_id}。",
+                    )
+                )
+
     for task in scenario.tasks:
         if task.lane not in lane_set:
             errors.append(
@@ -426,6 +440,8 @@ def _expand_cycles(
             description=scenario.description,
             repeat_count=scenario.repeat_count,
             loop=scenario.loop,
+            ct_range=scenario.ct_range,
+            tags=scenario.tags,
             lanes=scenario.lanes,
             tasks=expanded,
         ),

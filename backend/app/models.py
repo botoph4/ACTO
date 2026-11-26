@@ -91,6 +91,11 @@ class LoopConfig(BaseModel):
     release_after_task_id: str
 
 
+class CtRange(BaseModel):
+    start_task_id: str
+    end_task_id: str
+
+
 class Scenario(BaseModel):
     id: str = "acto-demo"
     name: str = "M1 双臂搓线插线 + 中转平台"
@@ -98,6 +103,7 @@ class Scenario(BaseModel):
     tags: list[str] = Field(default_factory=list, max_length=50)
     repeat_count: int = Field(default=1, ge=1, le=999)
     loop: LoopConfig | None = None
+    ct_range: CtRange | None = None
     lanes: list[Lane]
     tasks: list[Task]
 

@@ -1040,17 +1040,21 @@ export default function App() {
     scenario.loop?.release_after_task_id ??
     scenario.tasks.at(-1)?.id ??
     null;
+  const ctStartTaskId =
+    scenario.ct_range?.start_task_id ?? loopStartTaskId;
+  const ctEndTaskId =
+    scenario.ct_range?.end_task_id ?? loopReleaseTaskId;
   const cycleTiming =
     hasErrors || !schedule
       ? null
       : calculateCycleTiming(
           schedule,
           repeatCount,
-          loopStartTaskId,
-          loopReleaseTaskId,
+          ctStartTaskId,
+          ctEndTaskId,
         );
   const cycleTime = cycleTiming?.average ?? null;
-  const shortestCycleTime = cycleTiming?.middleShortest ?? null;
+  const shortestCycleTime = cycleTiming?.shortest ?? null;
   const parallelWindows =
     schedule && !hasErrors
       ? computeParallelWindows(schedule, scenario)
@@ -1541,6 +1545,8 @@ export default function App() {
             tasks={scenario.tasks}
             loopStartTaskId={loopStartTaskId}
             loopReleaseTaskId={loopReleaseTaskId}
+            ctStartTaskId={ctStartTaskId}
+            ctEndTaskId={ctEndTaskId}
             onRepeatCountChange={(count) => {
               const nextLoop =
                 scenario.loop ??
@@ -1564,6 +1570,15 @@ export default function App() {
                   release_after_task_id: releaseTaskId,
                 },
               })
+            }
+            onCtRangeChange={(startTaskId, endTaskId) =>
+              updateScenario((current) => ({
+                ...current,
+                ct_range: {
+                  start_task_id: startTaskId,
+                  end_task_id: endTaskId,
+                },
+              }))
             }
           />
 

@@ -1963,12 +1963,12 @@ textarea:focus-visible {
 }
 
 .repeat-summary {
-  flex: 0 0 68px;
+  flex: 0 0 90px;
   min-width: 0;
   padding: 6px 12px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: 28px 24px;
+  grid-template-rows: 28px 24px 24px;
   align-items: center;
   column-gap: 16px;
   border: 1px solid #dfe6f1;
@@ -2124,9 +2124,9 @@ textarea:focus-visible {
   font-size: calc(7px * var(--font-scale, 1));
 }
 
-.repeat-loop-row {
+.repeat-loop-row,
+.repeat-ct-range-row {
   grid-column: 1 / -1;
-  grid-row: 2;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -2136,7 +2136,16 @@ textarea:focus-visible {
   white-space: nowrap;
 }
 
-.repeat-loop-row > span:first-child {
+.repeat-loop-row {
+  grid-row: 2;
+}
+
+.repeat-ct-range-row {
+  grid-row: 3;
+}
+
+.repeat-loop-row > span:first-child,
+.repeat-ct-range-row > span:first-child {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -2144,13 +2153,15 @@ textarea:focus-visible {
   font-weight: 600;
 }
 
-.repeat-loop-row label {
+.repeat-loop-row label,
+.repeat-ct-range-row label {
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
-.repeat-loop-row select {
+.repeat-loop-row select,
+.repeat-ct-range-row select {
   width: 145px;
   height: 21px;
   padding: 0 5px;
@@ -2162,17 +2173,20 @@ textarea:focus-visible {
   font-size: 7.5px;
 }
 
-.repeat-loop-row select:focus {
+.repeat-loop-row select:focus,
+.repeat-ct-range-row select:focus {
   border-color: #b8c8ff;
   box-shadow: 0 0 0 2px rgba(49, 94, 251, 0.06);
 }
 
-.repeat-loop-arrow {
+.repeat-loop-arrow,
+.repeat-ct-arrow {
   color: #5475d6;
   font: 700 13px/1 "DM Mono", monospace;
 }
 
-.repeat-loop-row small {
+.repeat-loop-row small,
+.repeat-ct-range-row small {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -26,90 +26,68 @@ export function formatSeconds(value: number, digits = 1): string {
 
 export type CycleTimingMetrics = {
   average: number;
-  first: number;
-  middleCount: number;
-  middleShortest: number;
-  last: number;
+  shortest: number;
+  sampleCount: number;
 };
 
 export function calculateCycleTiming(
   schedule: ScheduleResult,
   repeatCount: number,
-  loopStartTaskId: string | null,
-  loopReleaseTaskId: string | null,
+  startTaskId: string | null,
+  endTaskId: string | null,
 ): CycleTimingMetrics {
   const effectiveRepeat = Math.max(
     1,
     schedule.repeat_count ?? repeatCount,
   );
   const fallback = schedule.metrics.makespan / effectiveRepeat;
-  if (effectiveRepeat <= 2) {
+  if (!startTaskId || !endTaskId) {
     return {
       average: fallback,
-      first: fallback,
-      middleCount: 0,
-      middleShortest: fallback,
-      last: fallback,
+      shortest: fallback,
+      sampleCount: effectiveRepeat,
     };
   }
 
-  const cycleStarts =
-    loopStartTaskId == null
-      ? []
-      : schedule.scheduled_tasks
-          .filter(
-            (task) => (task.template_id ?? task.id) === loopStartTaskId,
-          )
-          .sort(
-            (left, right) =>
-              (left.iteration ?? 1) - (right.iteration ?? 1),
-          )
-          .map((task) => task.start);
-  const cycleEnds =
-    loopReleaseTaskId == null
-      ? []
-      : schedule.scheduled_tasks
-          .filter(
-            (task) => (task.template_id ?? task.id) === loopReleaseTaskId,
-          )
-          .sort(
-            (left, right) =>
-              (left.iteration ?? 1) - (right.iteration ?? 1),
-          )
-          .map((task) => task.end);
-
-  if (cycleStarts.length < 2 || cycleEnds.length < 2) {
-    return {
-      average: fallback,
-      first: fallback,
-      middleCount: Math.max(0, effectiveRepeat - 2),
-      middleShortest: fallback,
-      last: fallback,
-    };
+  const startsByIteration = new Map<number, number>();
+  const endsByIteration = new Map<number, number>();
+  for (const task of schedule.scheduled_tasks) {
+    const templateId = task.template_id ?? task.id;
+    const iteration = task.iteration ?? 1;
+    if (templateId === startTaskId) {
+      startsByIteration.set(iteration, task.start);
+    }
+    if (templateId === endTaskId) {
+      endsByIteration.set(iteration, task.end);
+    }
   }
 
-  const first = Math.max(0, cycleEnds[0] - cycleStarts[0]);
-  const middleIntervals = cycleStarts
-    .slice(2)
-    .map((start, index) => start - cycleStarts[index + 1])
-    .filter((value) => value > 0.0001);
-  const middleCount = Math.max(0, effectiveRepeat - 2);
-  const last = Math.max(
-    0,
-    cycleEnds.at(-1)! - cycleStarts.at(-1)!,
-  );
-  const middleShortest = middleIntervals.length
-    ? Math.min(...middleIntervals)
-    : Math.min(first, last);
+  const cycleDurations = Array.from(
+    { length: effectiveRepeat },
+    (_, index) => {
+      const iteration = index + 1;
+      const start = startsByIteration.get(iteration);
+      const end = endsByIteration.get(iteration);
+      return start == null || end == null
+        ? null
+        : end - start;
+    },
+  ).filter((duration): duration is number => duration != null && duration >= 0);
+
+  if (!cycleDurations.length) {
+    return {
+      average: fallback,
+      shortest: fallback,
+      sampleCount: effectiveRepeat,
+    };
+  }
   const average =
-    (first + middleCount * middleShortest + last) / effectiveRepeat;
-
+    cycleDurations.reduce((total, duration) => total + duration, 0) /
+    cycleDurations.length;
   return {
     average,
-    first,
-    middleCount,
-    middleShortest,
-    last,
+    shortest: Math.min(...cycleDurations),
+    sampleCount: cycleDurations.length,
   };
 }
 
