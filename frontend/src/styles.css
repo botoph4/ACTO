@@ -2943,13 +2943,29 @@ textarea:focus-visible {
   white-space: nowrap;
 }
 
+.time-tick span.time-tick-label-hidden {
+  visibility: hidden;
+}
+
 .cycle-band-label {
   position: absolute;
   top: 2px;
   color: #7890c6;
   font: 600 calc(7px * var(--font-scale, 1))/1 "DM Mono", monospace;
   letter-spacing: 0.2px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
   pointer-events: none;
+  z-index: 4;
+}
+
+.cycle-band-label small {
+  color: #8895aa;
+  font-size: calc(7px * var(--font-scale, 1));
+  font-weight: 500;
+  letter-spacing: 0;
 }
 
 .ct-flag {

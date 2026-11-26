@@ -797,15 +797,29 @@ export default function GanttChart({
               className="gantt-time-axis"
               style={{ width: timelineWidth, ...gridStyle }}
             >
-              {ticks.map((tick) => (
-                <div
-                  className="time-tick"
-                  key={tick}
-                  style={{ left: tick * scale }}
-                >
-                  <span>{tick}s</span>
-                </div>
-              ))}
+              {ticks.map((tick) => {
+                const overlapsCycleStart = cycleStartInstances.some(
+                  (instance) =>
+                    Math.abs(instance.start - tick) * scale < 44,
+                );
+                return (
+                  <div
+                    className="time-tick"
+                    key={tick}
+                    style={{ left: tick * scale }}
+                  >
+                    <span
+                      className={
+                        overlapsCycleStart
+                          ? "time-tick-label-hidden"
+                          : undefined
+                      }
+                    >
+                      {tick}s
+                    </span>
+                  </div>
+                );
+              })}
               {schedule &&
                 cycleStartInstances.map((startInstance, repeatIndex) => (
                   <div
@@ -813,7 +827,8 @@ export default function GanttChart({
                     key={`cycle-label-${repeatIndex}`}
                     style={{ left: startInstance.start * scale + 5 }}
                   >
-                    第 {repeatIndex + 1} 次
+                    <span>第 {repeatIndex + 1} 次</span>
+                    <small>{formatSeconds(startInstance.start, 1)}</small>
                   </div>
                 ))}
               {schedule && (
