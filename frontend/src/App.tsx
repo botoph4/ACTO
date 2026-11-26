@@ -70,7 +70,7 @@ import {
 const STORAGE_KEY = "acto-workspaces-v3";
 const LEGACY_STORAGE_KEY = "m1-cycle-studio-scenario-v2";
 const UI_SCALE_KEY = "acto-ui-scale";
-const APP_VERSION = "0.2.3";
+const APP_VERSION = "0.2.4";
 
 const UI_SCALE_OPTIONS = [
   { label: "50%", value: 0.5 },
