@@ -1,0 +1,544 @@
+{
+  "id": "scenario_m1_chest_transfer_dual_slot_v1",
+  "name": "M1+胸部中转台CT（双穴位）",
+  "description": "搓线末端\n胸部中转台（拔帽+位置二次定位）\n插线末端\n双穴位：胸部中转平台可同时占用两个独立穴位。",
+  "repeat_count": 3,
+  "loop": {
+    "start_task_id": "task_mwvhlzir_n39m",
+    "release_after_task_id": "task_mwvxrorh_br2y"
+  },
+  "lanes": [
+    {
+      "id": "right_arm",
+      "name": "右臂 / 搓线",
+      "short_name": "R",
+      "color": "#2F6BFF",
+      "description": "搓线、取线、捋线与复位",
+      "capacity": 1
+    },
+    {
+      "id": "transfer",
+      "name": "中转平台",
+      "short_name": "T×2",
+      "color": "#8B5CF6",
+      "description": "双穴位夹紧、旋转与二次定位，可同时容纳两个工件",
+      "capacity": 2
+    },
+    {
+      "id": "left_arm",
+      "name": "左臂 / 插线",
+      "short_name": "L",
+      "color": "#16A085",
+      "description": "拔帽、取料、调姿与力控插入",
+      "capacity": 1
+    },
+    {
+      "id": "lane_mwwwio7t_7383",
+      "name": "末端可并行视觉",
+      "short_name": "U4",
+      "color": "#F5A623",
+      "description": "",
+      "capacity": 1
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task_mwvhlzir_n39m",
+      "name": "至取线位",
+      "lane": "right_arm",
+      "duration": 2.3664319132398464,
+      "color": "#3978F6",
+      "category": "机械臂动作",
+      "dependencies": [],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [
+        "left_arm"
+      ],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "motion",
+      "motion_distance_mm": 700,
+      "motion_velocity_mm_s": 1000,
+      "motion_acceleration_mm_s2": 500,
+      "motion_duration_mode": "auto"
+    },
+    {
+      "id": "task_mwvhnvvq_1unb",
+      "name": "线束拍照",
+      "lane": "lane_mwwwio7t_7383",
+      "duration": 2,
+      "color": "#F5A623",
+      "category": "视觉",
+      "dependencies": [
+        "task_mwvhlzir_n39m"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwvhpepf_uhhg",
+      "name": "线束搓线至1根线缆",
+      "lane": "right_arm",
+      "duration": 10,
+      "color": "#D96C3B",
+      "category": "末端动作",
+      "dependencies": [
+        "task_mwvhnvvq_1unb"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwvhqs29_oybo",
+      "name": "皮带夹爪捋线",
+      "lane": "right_arm",
+      "duration": 1.2649110640673518,
+      "color": "#2F6BFF",
+      "category": "机械臂动作",
+      "dependencies": [
+        "task_mwvhpepf_uhhg"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "motion",
+      "motion_distance_mm": 200,
+      "motion_velocity_mm_s": 1000,
+      "motion_acceleration_mm_s2": 500,
+      "motion_duration_mode": "auto"
+    },
+    {
+      "id": "task_mwvhrudk_9r1x",
+      "name": "中转台位置z+捋线",
+      "lane": "right_arm",
+      "duration": 1.7320508075688772,
+      "color": "#2F6BFF",
+      "category": "机械臂动作",
+      "dependencies": [
+        "task_mwvi8e36_pdif"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "motion",
+      "motion_distance_mm": 150,
+      "motion_velocity_mm_s": 200,
+      "motion_acceleration_mm_s2": 200,
+      "motion_duration_mode": "auto"
+    },
+    {
+      "id": "task_mwvhtno7_cmvn",
+      "name": "光模块尾部防尘塞拔帽",
+      "lane": "left_arm",
+      "duration": 3,
+      "color": "#18A586",
+      "category": "机械臂动作",
+      "dependencies": [
+        "task_mwwv82g5_kp1e"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwvhvljf_0dyu",
+      "name": "移动至中转台取料位",
+      "lane": "left_arm",
+      "duration": 2.1908902300206647,
+      "color": "#18A586",
+      "category": "机械臂动作",
+      "dependencies": [
+        "task_mwvhtno7_cmvn",
+        "task_mwviemn1_4k9z"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "motion",
+      "motion_distance_mm": 600,
+      "motion_velocity_mm_s": 1000,
+      "motion_acceleration_mm_s2": 500,
+      "motion_duration_mode": "auto"
+    },
+    {
+      "id": "task_mwvhxn0p_b4lo",
+      "name": "力控插接",
+      "lane": "left_arm",
+      "duration": 1,
+      "color": "#18A586",
+      "category": "机械臂动作",
+      "dependencies": [
+        "task_mwvxxfz5_0r74"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwvi6kv7_hksg",
+      "name": "插头角度识别",
+      "lane": "transfer",
+      "duration": 2,
+      "color": "#F5A623",
+      "category": "视觉",
+      "dependencies": [
+        "task_mwvyejrq_em3u"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwvi8e36_pdif",
+      "name": "上夹爪预夹紧",
+      "lane": "transfer",
+      "duration": 1,
+      "color": "#8B5CF6",
+      "category": "中转台动作",
+      "dependencies": [
+        "task_mwvuxxzm_hz9o"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwviemn1_4k9z",
+      "name": "上夹爪松，下夹爪夹紧防尘塞",
+      "lane": "transfer",
+      "duration": 1,
+      "color": "#8B5CF6",
+      "category": "中转台动作",
+      "dependencies": [
+        "task_mwvi6kv7_hksg"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwvifk8j_zl5x",
+      "name": "线缆条形码扫码",
+      "lane": "transfer",
+      "duration": 1,
+      "color": "#F5A623",
+      "category": "视觉",
+      "dependencies": [
+        "task_mwvi8e36_pdif"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null
+    },
+    {
+      "id": "task_mwvuxxzm_hz9o",
+      "name": "移动至中转台",
+      "lane": "right_arm",
+      "duration": 0.8944271909999159,
+      "color": "#2F6BFF",
+      "category": "机械臂动作",
+      "dependencies": [
+        "task_mwvhqs29_oybo"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "motion",
+      "motion_distance_mm": 100,
+      "motion_velocity_mm_s": 500,
+      "motion_acceleration_mm_s2": 500,
+      "motion_duration_mode": "auto"
+    },
+    {
+      "id": "task_mwvx33nn_f88n",
+      "name": "z+线缆防尘塞拔帽",
+      "lane": "left_arm",
+      "duration": 1.2000000000000002,
+      "color": "#18A586",
+      "category": "机械臂动作",
+      "dependencies": [
+        "task_mwvhtno7_cmvn",
+        "task_mwvhvljf_0dyu"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "motion",
+      "motion_distance_mm": 100,
+      "motion_velocity_mm_s": 100,
+      "motion_acceleration_mm_s2": 500,
+      "motion_duration_mode": "auto",
+      "dependency_delay_enabled": false,
+      "dependency_delay_seconds": 0
+    },
+    {
+      "id": "task_mwvx9uk3_n9fy",
+      "name": "插头正反识别",
+      "lane": "left_arm",
+      "duration": 1,
+      "color": "#F5A623",
+      "category": "视觉",
+      "dependencies": [
+        "task_mwvx33nn_f88n"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "non_motion",
+      "motion_distance_mm": null,
+      "motion_velocity_mm_s": null,
+      "motion_acceleration_mm_s2": null,
+      "motion_duration_mode": "manual",
+      "dependency_delay_enabled": false,
+      "dependency_delay_seconds": 0
+    },
+    {
+      "id": "task_mwvxrorh_br2y",
+      "name": "右臂回home",
+      "lane": "right_arm",
+      "duration": 2,
+      "color": "#2F6BFF",
+      "category": "机械臂动作",
+      "dependencies": [
+        "task_mwwvw0om_6hp8"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "non_motion",
+      "motion_distance_mm": null,
+      "motion_velocity_mm_s": null,
+      "motion_acceleration_mm_s2": null,
+      "motion_duration_mode": "manual",
+      "dependency_delay_enabled": false,
+      "dependency_delay_seconds": 0
+    },
+    {
+      "id": "task_mwvxxfz5_0r74",
+      "name": "强化学习对位",
+      "lane": "left_arm",
+      "duration": 3,
+      "color": "#F5A623",
+      "category": "视觉",
+      "dependencies": [
+        "task_mwvxy5j1_evjq"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [
+        "left_arm",
+        "right_arm"
+      ],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "non_motion",
+      "motion_distance_mm": null,
+      "motion_velocity_mm_s": null,
+      "motion_acceleration_mm_s2": null,
+      "motion_duration_mode": "manual",
+      "dependency_delay_enabled": false,
+      "dependency_delay_seconds": 0
+    },
+    {
+      "id": "task_mwvxy5j1_evjq",
+      "name": "移动至预插接位",
+      "lane": "left_arm",
+      "duration": 2.1908902300206647,
+      "color": "#18A586",
+      "category": "机械臂动作",
+      "dependencies": [
+        "task_mwvx9uk3_n9fy"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "motion",
+      "motion_distance_mm": 600,
+      "motion_velocity_mm_s": 1000,
+      "motion_acceleration_mm_s2": 500,
+      "motion_duration_mode": "auto",
+      "dependency_delay_enabled": false,
+      "dependency_delay_seconds": 0
+    },
+    {
+      "id": "task_mwvycb5g_6d2e",
+      "name": "下夹爪松开",
+      "lane": "transfer",
+      "duration": 1,
+      "color": "#8B5CF6",
+      "category": "中转台动作",
+      "dependencies": [
+        "task_mwvx33nn_f88n"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "non_motion",
+      "motion_distance_mm": null,
+      "motion_velocity_mm_s": null,
+      "motion_acceleration_mm_s2": null,
+      "motion_duration_mode": "manual",
+      "dependency_delay_enabled": false,
+      "dependency_delay_seconds": 0
+    },
+    {
+      "id": "task_mwvyejrq_em3u",
+      "name": "上夹爪终夹紧",
+      "lane": "transfer",
+      "duration": 1,
+      "color": "#8B5CF6",
+      "category": "中转台动作",
+      "dependencies": [
+        "task_mwvhrudk_9r1x"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "non_motion",
+      "motion_distance_mm": null,
+      "motion_velocity_mm_s": null,
+      "motion_acceleration_mm_s2": null,
+      "motion_duration_mode": "manual",
+      "dependency_delay_enabled": false,
+      "dependency_delay_seconds": 0
+    },
+    {
+      "id": "task_mwwv82g5_kp1e",
+      "name": "拔帽强化学习对位",
+      "lane": "left_arm",
+      "duration": 3,
+      "color": "#F5A623",
+      "category": "视觉",
+      "dependencies": [
+        "task_mwwvzun8_6aul"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [
+        "right_arm"
+      ],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "non_motion",
+      "motion_distance_mm": null,
+      "motion_velocity_mm_s": null,
+      "motion_acceleration_mm_s2": null,
+      "motion_duration_mode": "manual",
+      "dependency_delay_enabled": false,
+      "dependency_delay_seconds": 0
+    },
+    {
+      "id": "task_mwwvw0om_6hp8",
+      "name": "搓线夹爪松开",
+      "lane": "right_arm",
+      "duration": 1,
+      "color": "#D96C3B",
+      "category": "末端动作",
+      "dependencies": [
+        "task_mwvhrudk_9r1x"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "non_motion",
+      "motion_distance_mm": null,
+      "motion_velocity_mm_s": null,
+      "motion_acceleration_mm_s2": null,
+      "motion_duration_mode": "manual",
+      "dependency_delay_enabled": false,
+      "dependency_delay_seconds": 0
+    },
+    {
+      "id": "task_mwwvzun8_6aul",
+      "name": "移动至光模块拔帽位",
+      "lane": "left_arm",
+      "duration": 2.5298221281347035,
+      "color": "#18A586",
+      "category": "机械臂动作",
+      "dependencies": [
+        "task_mwvifk8j_zl5x"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "motion",
+      "motion_distance_mm": 800,
+      "motion_velocity_mm_s": 1000,
+      "motion_acceleration_mm_s2": 500,
+      "motion_duration_mode": "auto",
+      "dependency_delay_enabled": false,
+      "dependency_delay_seconds": 0
+    },
+    {
+      "id": "task_mwww8dl7_ydr7",
+      "name": "左臂回home",
+      "lane": "left_arm",
+      "duration": 2,
+      "color": "#18A586",
+      "category": "机械臂动作",
+      "dependencies": [
+        "task_mwvhxn0p_b4lo"
+      ],
+      "stop_after": [],
+      "can_parallel": true,
+      "locked_resources": [],
+      "notes": "",
+      "manual_start": null,
+      "motion_type": "non_motion",
+      "motion_distance_mm": null,
+      "motion_velocity_mm_s": null,
+      "motion_acceleration_mm_s2": null,
+      "motion_duration_mode": "manual",
+      "dependency_delay_enabled": false,
+      "dependency_delay_seconds": 0
+    }
+  ],
+  "tags": [
+    "M1",
+    "光纤插接",
+    "双穴位"
+  ]
+}
